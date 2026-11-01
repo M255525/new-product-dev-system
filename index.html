@@ -79,7 +79,7 @@ header.top{padding:18px 0 10px}
 .seg button{border:none;background:#fff;padding:6px 12px;cursor:pointer}
 .seg button.on{background:var(--ink);color:#fff}
 .key-note{font-size:.8rem;color:var(--sub)}
-input[type=text],input[type=number],input[type=password],select,textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff}
+input[type=text],input[type=number],input[type=url],input[type=password],select,textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff}
 textarea{resize:vertical;min-height:72px;line-height:1.6}
 input:focus,select:focus,textarea:focus{outline:2px solid rgba(19,119,122,.35);border-color:var(--teal)}
 
@@ -215,6 +215,17 @@ footer.foot{text-align:center;color:var(--sub);font-size:.82rem;padding:20px 0 3
 .projlist .pi{display:flex;align-items:center;gap:8px;padding:6px 4px;border-bottom:1px dashed var(--line);font-size:.88rem}
 .projlist .pi span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #printReport{display:none}
+.srcb{font-size:.7rem;border-radius:6px;padding:0 6px;font-weight:700;margin-left:4px;vertical-align:1px}
+.srcb.url{background:var(--teal2);color:var(--teal)}
+.srcb.ai{background:#eadcf1;color:var(--plum)}
+.urlcard{margin-bottom:12px;border-left:4px solid var(--teal)}
+.urlrow{display:grid;grid-template-columns:150px minmax(0,1fr) auto;gap:8px;align-items:center;margin-bottom:6px}
+.urlrow label{font-size:.84rem;font-weight:600;color:var(--sub)}
+.urlst{font-size:.85rem;margin-top:8px;line-height:1.7}
+.urlst:empty{display:none}
+.curfld{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.curfld label{margin:0}
+.curfld select{width:auto}
 
 @media (max-width:980px){
   .app{grid-template-columns:minmax(0,1fr)}
@@ -239,6 +250,13 @@ footer.foot{text-align:center;color:var(--sub);font-size:.82rem;padding:20px 0 3
   .set-sec>summary::after{order:2}
   .set-sec .ssv{flex:1 1 100%;order:3;margin-left:0;text-align:left;white-space:normal}
   .nav2 .btn{flex:1;justify-content:center}
+  .urlrow{grid-template-columns:minmax(0,1fr)}
+  .urlrow .btn{justify-self:stretch;justify-content:center}
+  input[type=text],input[type=number],input[type=url],input[type=password],select,textarea{font-size:16px}
+  .tools .btn{flex:1 1 calc(50% - 8px);justify-content:center}
+  .tools .status{flex-basis:100%}
+  .sh h2{font-size:1.2rem}
+  .hbtns .hbtn{flex:1 1 auto;justify-content:center}
 }
 @media print{
   body{background:#fff;padding:0!important;font-size:12px}
@@ -345,7 +363,7 @@ footer.foot{text-align:center;color:var(--sub);font-size:.82rem;padding:20px 0 3
     <h3 style="margin:4px 0">⚠ 使用警語</h3>
     <ul class="clean" id="warnList">
       <li>本工具是<b>教學用</b>的新品開發思考框架。規則式分析以關鍵字比對與內建模板為主，AI 產出也可能有誤或過度推論，結果<b>僅供發想參考，不構成商業、投資或法律建議</b>。</li>
-      <li>評論分析只依你貼上的文字判斷。<b>請勿貼上含他人姓名、電話、地址等個資的內容</b>；若引用電商平台評論，請自行確認平台使用條款，本工具不會自動抓取任何網站。</li>
+      <li>評論分析只依你貼上的文字判斷。<b>請勿貼上含他人姓名、電話、地址等個資的內容</b>；若引用電商平台評論，請自行確認平台使用條款。「貼網址自動填入」只在你按下按鈕時讀取那一個商品頁（momo 由本工具讀取服務、其他網站由你設定的 AI 服務），不會批次爬取；讀不到的欄位維持空白，「AI 補齊」的內容是推測，評論為模擬資料。</li>
       <li>AI 功能需自備 API 金鑰（BYOK）。金鑰只存在你的瀏覽器，按下「用 AI 產生」時，產品資料會直接送往你選擇的 AI 服務商，可能產生費用，請自行留意用量。</li>
       <li>內建範例的品牌、評論、競品與價格皆為<b>虛構</b>，與任何真實商品無關。</li>
       <li>所有資料只存在本機瀏覽器（localStorage），清除瀏覽器資料就會消失；重要專案請到「⚙ 常用設定 → 資料管理」匯出 JSON 備份。</li>
@@ -467,8 +485,9 @@ var STEPS = [
   {id:'itype', n:'創新類型', s:'連續／動態／非連續'},
   {id:'proposal', n:'概念提案報告', s:'提案＋開發七階段', g:'產出'}
 ];
-var EMPTY_INPUT = {name:'', cat:'fashion', seg:'', pain:'', reviews:'', feedback:'', ourFeat:'', ourPrice:'', compName:'', compFeat:'', compPrice:''};
-function freshState(){ return {v:1, input:JSON.parse(JSON.stringify(EMPTY_INPUT)), analyzed:false, step:0, seeds:{methods:0, mandala:0}, rule:{}, ai:{}, picks:null, checks:{}, extraChecks:[], mandEdit:{}, itype:{}, road:{}, propEdit:{}, mtab:'summary', projId:null}; }
+var EMPTY_INPUT = {name:'', cat:'fashion', seg:'', pain:'', reviews:'', feedback:'', ourFeat:'', ourPrice:'', compName:'', compFeat:'', compPrice:'', urlMe:'', urlComp:'', cur:'TWD'};
+function freshState(){ return {v:1, input:JSON.parse(JSON.stringify(EMPTY_INPUT)), analyzed:false, step:0, seeds:{methods:0, mandala:0}, rule:{}, ai:{}, picks:null, checks:{}, extraChecks:[], mandEdit:{}, itype:{}, road:{}, propEdit:{}, mtab:'summary', projId:null, src:{}, catSet:false}; }
+function curUnit(){ var c = S.input.cur || 'TWD'; return c === 'TWD' ? ' 元' : ' ' + c; }
 var S = freshState();
 function eff(k){ return S.ai[k] || S.rule[k]; }
 function P(){ return S.input.name.trim() || '這項產品'; }
@@ -620,11 +639,11 @@ function buildC3(){
   });
   them.forEach(function(c, j){ if(!usedThem[j]) themOnly.push(c.t); });
   var op = parseFloat(S.input.ourPrice), cp = parseFloat(S.input.compPrice), priceLine = '';
-  if(isFinite(op) && isFinite(cp) && cp === 0 && op > 0){ priceLine = comp + '免費，我方收費 ' + op + ' 元——必須說清楚付費換到的價值'; }
+  if(isFinite(op) && isFinite(cp) && cp === 0 && op > 0){ priceLine = comp + '免費，我方收費 ' + op + curUnit() + '——必須說清楚付費換到的價值'; }
   else if(isFinite(op) && isFinite(cp)){
-    if(op > cp * 1.1) priceLine = '我方售價 ' + op + ' 元，比' + comp + '（' + cp + ' 元）高約 ' + Math.round((op / Math.max(cp, 1) - 1) * 100) + '%';
-    else if(op < cp * 0.9) priceLine = '我方售價 ' + op + ' 元，比' + comp + '（' + cp + ' 元）低約 ' + Math.round((1 - op / cp) * 100) + '%';
-    else priceLine = '雙方價格相近（' + op + ' vs ' + cp + ' 元）';
+    if(op > cp * 1.1) priceLine = '我方售價 ' + op + curUnit() + '，比' + comp + '（' + cp + curUnit() + '）高約 ' + Math.round((op / Math.max(cp, 1) - 1) * 100) + '%';
+    else if(op < cp * 0.9) priceLine = '我方售價 ' + op + curUnit() + '，比' + comp + '（' + cp + curUnit() + '）低約 ' + Math.round((1 - op / cp) * 100) + '%';
+    else priceLine = '雙方價格相近（' + op + ' vs ' + cp + curUnit() + '）';
   }
   var pros = (rv.pros || []).filter(function(x){ return x.id !== 'other'; }), cons = (rv.cons || []).filter(function(x){ return x.id !== 'other'; });
   var usView = pros.slice(0, 3).map(function(x){ return '肯定我們的「' + x.n + '」（' + x.count + ' 則評論提到）'; }).concat(usOnly.slice(0, 3).map(function(t){ return '「' + t + '」是競品沒有的特色'; }));
@@ -730,7 +749,7 @@ function fmtJson(k){ return JSON.stringify(eff(k), null, 1); }
 function ctxBlock(){
   var i = S.input;
   return '【產品基本資訊】\n產品名稱：' + P() + '\n產品類別：' + cat().label + '\n目標客群：' + segList().join('、') + '\n市場痛點或需求：' + (i.pain || '（未填）') +
-    (i.ourFeat ? '\n產品特色：' + lines(i.ourFeat).join('、') : '') + (i.ourPrice ? '\n售價：' + i.ourPrice + ' 元' : '');
+    (i.ourFeat ? '\n產品特色：' + lines(i.ourFeat).join('、') : '') + (i.ourPrice ? '\n售價：' + i.ourPrice + curUnit() : '');
 }
 function promptFor(k){
   var i = S.input, p = P();
@@ -739,7 +758,7 @@ function promptFor(k){
     case 'pains': return '提供的產品或服務內容：' + p + '（' + cat().label + '）\n' + (i.ourFeat ? '特色：' + lines(i.ourFeat).join('、') + '\n' : '') + '已知痛點：' + (i.pain || '（無）') + '\n評論缺點摘要：' + (eff('reviews').cons || []).map(function(x){ return x.n; }).join('、') + '\n\n有哪一些目標客戶會使用這個產品或服務內容？\n顧客在使用這個產品或服務內容時，有哪一些方面沒有被滿足？讓我們透過一步步思考，並將產出以 table 呈現。';
     case 'levels': return '你是一位專業的產品策略顧問，熟悉菲利普・科特勒（Philip Kotler）提出的「產品的五個層次」理論。\n請協助我根據此理論，為一項新產品進行完整的五層分析。\n\n' + ctxBlock() + '\n\n【分析任務】\n1️⃣ 說明此產品的「核心利益」是什麼。\n2️⃣ 列出「基本產品」的功能與屬性。\n3️⃣ 分析「期望產品」中，消費者認為理所當然應具備的條件。\n4️⃣ 提出能創造差異化的「附加產品」構想。\n5️⃣ 展望「潛在產品」的未來創新方向與延伸服務。\n\n請用表格呈現結果，並於最後提供一段總結，說明五個層次之間如何形成一致的價值鏈。';
     case 'methods': return '你是一位具備 15 年經驗的創新策略教練。請協助我運用七種創新方法，針對「' + cat().label + '」開發「' + p + '」一項全新產品。\n\n' + ctxBlock() + '\n\n【請依序執行以下七種方法】\n屬性列舉法：列出' + p + '屬性 → 修改／重組提升創意\n強迫關係法：將產品 × 科技／其他物件／場景 → 產生新組合\n逆向假設法：列出產品既有假設 → 反轉 → 發展顛覆創意\n腦力激盪：至少提出 10 個發散點子\n結構分析法：建立 3–5 維度 × 各 3–5 選項 → 組合至少 3 種新概念\n全新情境法：把產品放入未來或非典型場景 → 找出新需求\n心智圖法：以' + p + '創新為中心做階層式文字心智圖\n\n【表格要求】\n請將以下項目以表格呈現：屬性列舉、強迫關係、逆向假設、結構分析（維度 × 選項 × 組合）、創意總表（欄位：方法｜內容｜創新點｜潛在價值）';
-    case 'c3': return '以顧客的角度，對於我們提供的內容與競爭者內容進行 3C 分析，分析的方向包含：\n1. 與競爭者的相同處\n2. 與競爭者的不同處\n3. 客戶眼中的你\n4. 客戶眼中的競爭者\n\n但並不侷限於以上 4 點，讓我們透過一步步思考，進行分析產品或服務內容。\n\n【Company：' + p + '】\n' + (lines(i.ourFeat).join('\n') || '（未填）') + (i.ourPrice ? '\n售價：' + i.ourPrice + ' 元' : '') + '\n\n【Competitor：' + (i.compName || '主要競品') + '】\n' + (lines(i.compFeat).join('\n') || '（未填）') + (i.compPrice ? '\n售價：' + i.compPrice + ' 元' : '');
+    case 'c3': return '以顧客的角度，對於我們提供的內容與競爭者內容進行 3C 分析，分析的方向包含：\n1. 與競爭者的相同處\n2. 與競爭者的不同處\n3. 客戶眼中的你\n4. 客戶眼中的競爭者\n\n但並不侷限於以上 4 點，讓我們透過一步步思考，進行分析產品或服務內容。\n\n【Company：' + p + '】\n' + (lines(i.ourFeat).join('\n') || '（未填）') + (i.ourPrice ? '\n售價：' + i.ourPrice + curUnit() : '') + '\n\n【Competitor：' + (i.compName || '主要競品') + '】\n' + (lines(i.compFeat).join('\n') || '（未填）') + (i.compPrice ? '\n售價：' + i.compPrice + curUnit() : '');
     case 'mandala': return '你現在是一位具備創意思考與問題拆解能力的思考教練，請使用「曼陀羅思考法」協助我展開主題。\n\n主題：' + p + ' 新品開發（' + cat().label + '，目標客群：' + segList().join('、') + '）\n\n請依照以下格式輸出：\n1. 先確認主題核心概念，用一句話描述主題焦點。\n2. 以主題為中心，展開 8 個關鍵延伸面向，形成「九宮格」概念架構。\n3. 將每一個延伸面向，再各自延伸出 8 個具體子想法。\n4. 最終輸出格式請以清楚的表格呈現：\n表格 A：主題與 8 大延伸面向（3x3 九宮格）\n表格 B：每個面向的 8 個子想法（共 8 張表格）\n\n最後請提供：\n- 對整體思考方向的簡要總結\n- 可立即採取的 3 個行動建議';
     case 'checklist': var md = mandalaEff(); return '以下是「' + p + '」的曼陀羅九宮格主題架構：\n' + (md ? md.facets.map(function(f){ return '【' + f.n + '】' + f.ideas.join('、'); }).join('\n') : '') + '\n\n客戶痛點：' + (eff('pains').rows || []).map(function(r){ return r.unmet; }).join('；') + '\n\nPrompt：根據以上九宮格主題架構製作檢核表\nPrompt：幫助我整合成一份檢核表，並以五星評論來評定問題的重要性\n\n表格欄位：編號｜檢核項目｜五星重要性（★1~★5）｜檢核｜備註';
     case 'itype': return '請依照以下三種創新類型，判斷「' + p + '」的新產品概念屬於哪一種，並說明理由與行銷上的注意事項：\n1. 連續性創新：現有產品的小幅改良，不需改變使用行為\n2. 動態連續性創新：改變原有產品的使用方式，需要調整部分使用習慣\n3. 非連續性創新：全新形式與使用方式，需重新學習並改變原有習慣\n\n新產品亮點：\n' + picks().map(function(t){ return '・' + t; }).join('\n');
@@ -801,6 +820,223 @@ function copyText(t){
   if(navigator.clipboard && window.isSecureContext){ navigator.clipboard.writeText(t).then(function(){ toast('📋 已複製提示詞，可以貼到 ChatGPT／Gemini／Claude'); }, fb); } else fb();
 }
 
+/* ================= 商品網址自動填入 =================
+   只填空白欄位；讀不到的欄位維持空白（不推測）。來源標記 S.src[欄位]＝'url'（網址讀到）／'ai'（AI 推測）。
+   momo 走自有 Cloudflare Worker（與 ecommerce-competitor-analyzer 共用，只允許 m255525.github.io 來源）；其他平台需 BYOK 由使用者的 AI 讀頁。 */
+var URL_CUR = [[/amazon\.co\.jp$/, 'JPY'], [/amazon\.co\.uk$/, 'GBP'], [/amazon\.(de|fr|it|es|nl)$/, 'EUR'], [/amazon\.ca$/, 'CAD'],
+  [/amazon\.com\.au$/, 'AUD'], [/amazon\.sg$/, 'SGD'], [/amazon\.com$/, 'USD'], [/shopee\.tw$|momoshop\.com\.tw$|pchome\.com\.tw$|books\.com\.tw$/, 'TWD'],
+  [/shopee\.sg$/, 'SGD'], [/shopee\.com\.my$/, 'MYR'], [/shopee\.co\.th$/, 'THB']];
+var PLATFORM_LABEL = {shopee:'蝦皮', momo:'momo', pchome:'PChome', amazon:'Amazon'};
+function parseProductUrl(raw){
+  var u; try{ u = new URL(String(raw || '').trim()); }catch(e){ return null; }
+  if(!/^https?:$/.test(u.protocol)) return null;
+  var h = u.hostname.toLowerCase().replace(/^www\./, ''), path = u.pathname;
+  try{ path = decodeURIComponent(path); }catch(e){}
+  var out = {url:u.href, host:h, platform:null, currency:null, name:''};
+  if(/(^|\.)shopee\./.test(h)) out.platform = 'shopee';
+  else if(/momoshop\.com\.tw$|momo\.dm$/.test(h)) out.platform = 'momo';
+  else if(/pchome\.com\.tw$/.test(h)) out.platform = 'pchome';
+  else if(/(^|\.)amazon\.|(^|\.)amzn\./.test(h)) out.platform = 'amazon';
+  URL_CUR.some(function(r){ if(r[0].test(h)){ out.currency = r[1]; return true; } return false; });
+  var segs = path.split('/').filter(Boolean);
+  if(out.platform === 'shopee') segs.some(function(s){ var m = s.match(/^(.+)-i\.\d+\.\d+$/); if(m){ out.name = m[1]; return true; } return false; });
+  else if(out.platform === 'amazon'){ var i = segs.indexOf('dp'); if(i < 0) i = segs.indexOf('gp'); if(i > 0 && /[A-Za-z一-鿿]/.test(segs[i - 1]) && segs[i - 1].length > 3) out.name = segs[i - 1]; }
+  out.name = out.name.replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120);
+  return out;
+}
+var CAT_KW = {drink:['飲','茶','咖啡','果汁','礦泉水','beverage','tea','coffee','drink'], food:['食品','零食','料理','餐','肉','米','麵','food','snack'],
+  tech:['3C','電子','智慧','科技','耳機','手機','電腦','充電','藍牙','electronics','smart'], home:['居家','家居','廚房','收納','清潔','寢具','家具','家電','home','kitchen'],
+  fashion:['服飾','包','皮夾','錢包','鞋','配件','飾品','手錶','精品','wallet','bag','fashion','shoe'], personal:['美妝','保養','個人','衛浴','洗','牙','髮','beauty','care'],
+  app:['App','APP','軟體','應用程式','software'], service:['服務','課程','訂閱','票券','旅遊','service','course']};
+function catFromText(t){
+  t = String(t || ''); if(!t) return null;
+  var hit = null; D.CAT_ORDER.some(function(k){ if(D.CATEGORIES[k].label === t){ hit = k; return true; } return false; }); if(hit) return hit;
+  D.CAT_ORDER.some(function(k){ if(CAT_KW[k].some(function(w){ return t.toLowerCase().indexOf(w.toLowerCase()) >= 0; })){ hit = k; return true; } return false; });
+  return hit;
+}
+var PRODUCT_READER_URL = 'https://ecommerce-product-reader.content-workflow.workers.dev/';
+async function readMomo(url){
+  var resp;
+  try{ resp = await fetch(PRODUCT_READER_URL + '?url=' + encodeURIComponent(url), {signal:AbortSignal.timeout(25000)}); }
+  catch(e){ throw new Error(e.name === 'TimeoutError' ? 'momo 讀取逾時，請稍後再試' : '連不上商品頁讀取服務（本機預覽不在允許來源內，請用線上版）'); }
+  var d = {}; try{ d = await resp.json(); }catch(e){}
+  if(!resp.ok || !d.ok) throw new Error(d.message || ('讀取服務回應 ' + resp.status));
+  return d;
+}
+async function postJsonWithRetry(url, headers, body, onRetry){
+  var RETRY = {429:1,500:1,503:1,529:1}, MAX = 3;
+  for(var a = 1; a <= MAX; a++){
+    var resp = await fetch(url, {method:'POST', headers:headers, body:JSON.stringify(body), signal:AbortSignal.timeout(180000)});
+    var raw = await resp.text();
+    if(resp.ok) return JSON.parse(raw);
+    var msg = raw.slice(0, 300);
+    try{ var err = JSON.parse(raw); msg = (err.error && err.error.message) || err.message || msg; }catch(e){}
+    if(RETRY[resp.status] && a < MAX){ var w = a * 8; if(onRetry) onRetry(a, resp.status, w); await new Promise(function(r){ setTimeout(r, w * 1000); }); continue; }
+    if(resp.status === 401 || resp.status === 403) msg += '——通常是 API 金鑰不正確或與服務商不對應';
+    if(resp.status === 404) msg += '——通常是模型名稱錯誤或已停用';
+    if(resp.status === 400 && /tool|url_context|web/i.test(msg)) msg += '——這個模型可能不支援讀取網頁，請在 ⚙ 常用設定換成推薦模型';
+    throw new Error('API 回應 ' + resp.status + '：' + msg);
+  }
+}
+// 讓使用者的 AI 服務商讀網頁後回答；回傳 {text, fetchError}
+async function callLLMWeb(provider, model, apiKey, prompt, onRetry){
+  var fetchError = '';
+  if(provider === 'claude'){
+    var toolType = /claude-(opus|sonnet)-(5|4-[6-8])/.test(model) ? 'web_fetch_20260209' : 'web_fetch_20250910';
+    var headers = {'content-type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'};
+    var messages = [{role:'user', content:prompt}], d, text = '';
+    for(var turn = 0; turn < 4; turn++){
+      d = await postJsonWithRetry('https://api.anthropic.com/v1/messages', headers, {model:model, max_tokens:8000, messages:messages, tools:[{type:toolType, name:'web_fetch', max_uses:3}]}, onRetry);
+      if(d.stop_reason === 'refusal') throw new Error('模型拒絕了這個請求');
+      text = '';
+      (d.content || []).forEach(function(b){
+        if(b.type === 'text') text += b.text;
+        if(b.type === 'web_fetch_tool_result' && b.content && /error/.test(b.content.type || '')) fetchError = b.content.error_code || 'fetch_error';
+      });
+      if(d.stop_reason !== 'pause_turn') break;
+      messages = messages.concat([{role:'assistant', content:d.content}]);
+    }
+    if(!text) throw new Error('回應中沒有文字內容');
+    return {text:text, fetchError:fetchError};
+  }
+  if(provider === 'gemini'){
+    var g = await postJsonWithRetry('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent',
+      {'content-type':'application/json','x-goog-api-key':apiKey}, {contents:[{parts:[{text:prompt}]}], tools:[{url_context:{}}]}, onRetry);
+    var cand = (g.candidates && g.candidates[0]) || {}, meta = cand.urlContextMetadata || cand.url_context_metadata || {};
+    (meta.urlMetadata || meta.url_metadata || []).forEach(function(m){ var st = m.urlRetrievalStatus || m.url_retrieval_status || ''; if(st && !/SUCCESS/.test(st)) fetchError = st; });
+    var t = ((cand.content && cand.content.parts) || []).map(function(p){ return p.text || ''; }).join('');
+    if(!t) throw new Error('回應中沒有文字內容');
+    return {text:t, fetchError:fetchError};
+  }
+  if(provider === 'openai'){
+    var o = await postJsonWithRetry('https://api.openai.com/v1/responses', {'content-type':'application/json','authorization':'Bearer ' + apiKey}, {model:model, input:prompt, tools:[{type:'web_search'}]}, onRetry);
+    var ot = ''; (o.output || []).forEach(function(it){ if(it.type === 'message') (it.content || []).forEach(function(c){ if(c.type === 'output_text') ot += c.text; }); });
+    if(!ot) throw new Error('回應中沒有文字內容');
+    return {text:ot, fetchError:''};
+  }
+  if(provider === 'openrouter'){
+    var r = await postJsonWithRetry('https://openrouter.ai/api/v1/chat/completions', {'content-type':'application/json','authorization':'Bearer ' + apiKey}, {model:model, messages:[{role:'user', content:prompt}], plugins:[{id:'web'}]}, onRetry);
+    var rt = r.choices && r.choices[0] && r.choices[0].message && r.choices[0].message.content;
+    if(!rt) throw new Error('回應中沒有文字內容');
+    return {text:rt, fetchError:''};
+  }
+  throw new Error('不支援的服務商');
+}
+var CAT_LABELS = D.CAT_ORDER.map(function(k){ return D.CATEGORIES[k].label; }).join('／');
+function buildUrlPrompt(info, isMe){
+  return '你是商品資料擷取助手。請讀取這個商品頁網址：' + info.url + '\n這是使用者' + (isMe ? '自己的產品（或要參考改良的同類熱銷商品）' : '要比較的競爭商品') + '。' + (info.name ? '網址裡的商品名稱線索：「' + info.name + '」。' : '') + '\n' +
+    '規則：\n1. 只根據頁面上實際看得到的內容填寫，不要用一般知識推測；頁面上找不到的欄位一律填 null 或空陣列。\n' +
+    '2. 如果完全無法讀取這個頁面（被網站阻擋、需要登入、找不到頁面），"readable" 填 false。\n' +
+    '3. price 填目前實際售價（只填數字），幣別填在 currency（ISO 代碼）。\n' +
+    '4. goodReviews 是頁面上看得到的 4～5 星好評原句（最多 8 則）；badReviews 是 1～3 星或抱怨、建議改進的原句（最多 8 則）。看不到評論就給空陣列，不可自己編寫。\n' +
+    '5. category 只能從「' + CAT_LABELS + '」選一個，判斷不出來填 null。\n' +
+    '只輸出一個 JSON 物件，不要其他文字：\n' +
+    '{"readable":true,"name":"完整商品名稱或 null","category":"類別或 null","audience":"頁面明確寫出的適用對象（用頓號分隔）或 null","features":["5～10 個商品特色或規格重點"],"price":數字或 null,"currency":"TWD 等或 null","goodReviews":[],"badReviews":[]}';
+}
+function cleanStr(v, max){ return typeof v === 'string' && v.trim() && !/^(null|n\/a|無|未知|none)$/i.test(v.trim()) ? v.trim().slice(0, max) : ''; }
+function strList(v, max){ if(typeof v === 'string') v = v.split(/[\n,，、;；]+/); return Array.isArray(v) ? v.map(function(x){ return cleanStr(typeof x === 'string' ? x : '', 200); }).filter(Boolean).slice(0, max) : []; }
+function isBlank(k){ return !String(S.input[k] == null ? '' : S.input[k]).trim(); }
+var FIELD_LABEL = {name:'產品名稱', cat:'產品類別', seg:'目標客群', pain:'市場痛點', reviews:'五星評論', feedback:'客戶回饋', ourFeat:'我方特色', ourPrice:'我方售價', compName:'競品名稱', compFeat:'競品特色', compPrice:'競品售價'};
+// 把擷取結果寫進空白欄位；回傳 {filled, notes, pageOk}
+function applyUrlData(isMe, info, data){
+  data = data || {};
+  var filled = [], notes = [], pageOk = data.readable !== false;
+  function put(k, v, src){ if(v === '' || v == null) return; if(k === 'cat'){ if(S.catSet) return; } else if(!isBlank(k)) return; S.input[k] = String(v); S.src[k] = src || 'url'; if(k === 'cat') S.catSet = true; filled.push(FIELD_LABEL[k]); }
+  var name = pageOk ? cleanStr(data.name, 120) : '';
+  put(isMe ? 'name' : 'compName', name || info.name);
+  if(!pageOk) return {filled:filled, notes:notes, pageOk:false};
+  var feats = strList(data.features, 10);
+  put(isMe ? 'ourFeat' : 'compFeat', feats.join('\n'));
+  var pageCur = (cleanStr(data.currency, 5) || info.currency || '').toUpperCase(), p = parseFloat(data.price);
+  if(isFinite(p) && p > 0 && p < 1e9){
+    var myCur = S.input.cur || 'TWD', otherBlank = isMe ? isBlank('compPrice') : isBlank('ourPrice');
+    if(pageCur && pageCur !== myCur && otherBlank && isBlank(isMe ? 'ourPrice' : 'compPrice')){ S.input.cur = pageCur; myCur = pageCur; }
+    if(pageCur && pageCur !== myCur) notes.push('頁面售價是 ' + pageCur + ' ' + p + '，與另一方幣別 ' + myCur + ' 不同，售價留空（不做匯率換算）');
+    else put(isMe ? 'ourPrice' : 'compPrice', Math.round(p * 100) / 100);
+  }
+  if(isMe){
+    var ck = catFromText(cleanStr(data.category, 30)); if(ck) put('cat', ck);
+    put('seg', cleanStr(data.audience, 80));
+    put('reviews', strList(data.goodReviews, 8).join('\n'));
+    put('feedback', strList(data.badReviews, 8).join('\n'));
+  }
+  return {filled:filled, notes:notes, pageOk:true};
+}
+var urlBusy = false;
+function setUrlStatus(h){ var el = $('urlStatus'); if(el) el.innerHTML = h; S._urlStatus = h; }
+async function urlFill(which){
+  if(urlBusy) return;
+  var jobs = [];
+  if(which === 'me' || which === 'all'){ if(S.input.urlMe.trim()) jobs.push({isMe:true, raw:S.input.urlMe, label:'我方商品'}); }
+  if(which === 'comp' || which === 'all'){ if(S.input.urlComp.trim()) jobs.push({isMe:false, raw:S.input.urlComp, label:'競品'}); }
+  if(!jobs.length){ toast('請先貼上商品頁網址'); return; }
+  var bad = jobs.filter(function(j){ return !parseProductUrl(j.raw); });
+  if(bad.length){ toast(bad[0].label + '的網址格式不正確，請貼上完整網址（https:// 開頭）'); return; }
+  var hasKey = !!settings.apiKey, out = [];
+  urlBusy = true; document.querySelectorAll('[data-act="urlfill"],[data-act="aiBlank"]').forEach(function(b){ b.disabled = true; });
+  try{
+    for(var n = 0; n < jobs.length; n++){
+      var j = jobs[n], info = parseProductUrl(j.raw), err = '', via = false, r = {filled:[], notes:[], pageOk:false};
+      function merge(x){ x.filled.forEach(function(f){ if(r.filled.indexOf(f) < 0) r.filled.push(f); }); r.notes = r.notes.concat(x.notes); r.pageOk = r.pageOk || x.pageOk; }
+      if(info.platform === 'momo'){
+        setUrlStatus('⏳ 讀取 momo 商品頁中（' + esc(j.label) + '）…');
+        try{ var md = await readMomo(info.url); merge(applyUrlData(j.isMe, info, md)); via = true; }catch(e){ err = 'momo：' + e.message; }
+      }
+      if(!via && hasKey){
+        setUrlStatus('⏳ AI 讀取商品頁中（' + esc(j.label) + '，約 10–60 秒）…');
+        try{
+          var res = await callLLMWeb(settings.provider, curModel(), settings.apiKey, buildUrlPrompt(info, j.isMe), function(a, st, w){ setUrlStatus('⏳ 服務商忙碌（' + st + '），' + w + ' 秒後重試…'); });
+          var data = parseJsonLoose(res.text);
+          if(res.fetchError && data.readable !== true) data.readable = false;
+          merge(applyUrlData(j.isMe, info, data)); err = '';
+        }catch(e){ err = (err ? err + '；' : '') + e.message; merge(applyUrlData(j.isMe, info, {readable:false})); }
+      } else if(!via){ merge(applyUrlData(j.isMe, info, {readable:false})); }
+      var msg = '<b>' + esc(j.label) + '</b>' + (info.platform ? '（' + PLATFORM_LABEL[info.platform] + '）' : '') + '：';
+      if(err) msg += '<span style="color:var(--bad)">讀取失敗（' + esc(err) + '）</span>，';
+      else if((hasKey || via) && !r.pageOk) msg += '網站擋下或頁面讀不到，';
+      msg += r.filled.length ? '已填入 ' + esc(r.filled.join('、')) : '沒有可填入的新資料（已有內容的欄位不會被覆蓋）';
+      if(r.notes.length) msg += '；' + esc(r.notes.join('；'));
+      out.push(msg);
+    }
+    var tail = hasKey ? '讀不到的欄位維持空白；可以按「✨ 請 AI 補齊空白欄位」。' : 'momo 由內建讀取服務直接填入；其他平台沒有 API 金鑰時只能從網址辨識商品名稱，其他欄位維持空白（到 ⚙ 常用設定填金鑰後可讓 AI 讀頁）。';
+    save(); render(); setUrlStatus('🔗 ' + out.join('<br>') + '<br><span class="muted">' + tail + '</span>');
+  }finally{
+    urlBusy = false; document.querySelectorAll('[data-act="urlfill"],[data-act="aiBlank"]').forEach(function(b){ b.disabled = false; });
+  }
+}
+// AI 補齊空白欄位（不讀網頁，依已知資料推測；全部標示 AI 推測）
+var BLANK_KEYS = ['name','cat','seg','pain','reviews','feedback','ourFeat','ourPrice','compName','compFeat','compPrice'];
+function blankFields(){ return BLANK_KEYS.filter(function(k){ return k === 'cat' ? !S.catSet : isBlank(k); }); }
+function buildBlankPrompt(){
+  var i = S.input, have = [], miss = blankFields();
+  BLANK_KEYS.forEach(function(k){ if(miss.indexOf(k) < 0) have.push(FIELD_LABEL[k] + '：' + (k === 'cat' ? cat().label : String(i[k]).replace(/\n/g, '／'))); });
+  if(i.urlMe) have.push('我方商品網址：' + i.urlMe); if(i.urlComp) have.push('競品網址：' + i.urlComp);
+  return '你是新品開發顧問。以下是一項產品的已知資料，請依同類商品的常見情況，合理推測「空白欄位」的內容，協助完成新品開發分析的輸入資料。\n\n【已知資料】\n' + (have.join('\n') || '（幾乎沒有，請依產品名稱推測）') +
+    '\n\n【需要補齊的空白欄位】' + miss.map(function(k){ return FIELD_LABEL[k]; }).join('、') +
+    '\n\n規則：\n1. 只補空白欄位，不要改寫已知資料。\n2. 五星評論、客戶回饋請寫成「同類商品常見的典型評論」（各 5～6 則、每則一句，口語化），它們是模擬資料。\n3. 產品類別只能從「' + CAT_LABELS + '」選一個。\n4. 售價只填數字（' + (i.cur || 'TWD') + '）。\n5. 用繁體中文（台灣用語）。\n\n只輸出一個 JSON 物件，鍵名只能用下列英文（不需要的鍵可省略）：\n' +
+    '{"name":"","category":"","segments":"用頓號分隔","pain":"","goodReviews":["…"],"badReviews":["…"],"ourFeatures":["…"],"ourPrice":0,"compName":"","compFeatures":["…"],"compPrice":0}';
+}
+async function aiFillBlank(){
+  var miss = blankFields();
+  if(!miss.length){ toast('目前沒有空白欄位'); return; }
+  if(!settings.apiKey){ copyText(buildBlankPrompt()); setUrlStatus('沒有 API 金鑰：已複製「補齊空白欄位」提示詞，可貼到 ChatGPT／Gemini／Claude；或到 ⚙ 常用設定填入金鑰後再按一次，就能直接填入。'); return; }
+  urlBusy = true; document.querySelectorAll('[data-act="urlfill"],[data-act="aiBlank"]').forEach(function(b){ b.disabled = true; });
+  setUrlStatus('⏳ AI 補齊空白欄位中（' + miss.map(function(k){ return FIELD_LABEL[k]; }).join('、') + '）…');
+  try{
+    var txt = await callLLM(settings.provider, curModel(), settings.apiKey, buildBlankPrompt(), function(a, st, w){ setUrlStatus('⏳ 服務商忙碌（' + st + '），' + w + ' 秒後重試…'); });
+    var d = parseJsonLoose(txt), filled = [];
+    function put(k, v){ if(miss.indexOf(k) < 0 || v === '' || v == null) return; if(k === 'cat'){ var ck = catFromText(v); if(!ck) return; v = ck; S.catSet = true; } S.input[k] = String(v); S.src[k] = 'ai'; filled.push(FIELD_LABEL[k]); }
+    function num(v){ var n = parseFloat(v); return isFinite(n) && n > 0 && n < 1e9 ? Math.round(n * 100) / 100 : ''; }
+    put('name', cleanStr(d.name, 120)); put('cat', cleanStr(d.category, 20)); put('seg', cleanStr(d.segments, 80)); put('pain', cleanStr(d.pain, 200));
+    put('reviews', strList(d.goodReviews, 8).join('\n')); put('feedback', strList(d.badReviews, 8).join('\n'));
+    put('ourFeat', strList(d.ourFeatures, 10).join('\n')); put('ourPrice', num(d.ourPrice));
+    put('compName', cleanStr(d.compName, 80)); put('compFeat', strList(d.compFeatures, 10).join('\n')); put('compPrice', num(d.compPrice));
+    save(); render();
+    setUrlStatus(filled.length ? '✨ AI 已補齊：' + esc(filled.join('、')) + '。這些欄位標示「AI 推測」' + (filled.indexOf('五星評論') >= 0 || filled.indexOf('客戶回饋') >= 0 ? '，評論是 AI 模擬的典型評論、不是真實顧客意見' : '') + '，請自行查核修改後再分析。' : 'AI 沒有回傳可用的內容，空白欄位維持不變。');
+  }catch(e){ setUrlStatus('<span style="color:var(--bad)">⚠ ' + esc(e.message) + '</span>（空白欄位維持不變）'); }
+  finally{ urlBusy = false; document.querySelectorAll('[data-act="urlfill"],[data-act="aiBlank"]').forEach(function(b){ b.disabled = false; }); }
+}
+
 /* ================= 儲存 ================= */
 function save(){ if(settings.autoSave) lsSet(DRAFT_KEY, JSON.stringify(S)); }
 function loadDraft(){ try{ var o = JSON.parse(lsGet(DRAFT_KEY) || 'null'); if(o && o.input){ var f = freshState(); Object.keys(f).forEach(function(k){ if(!(k in o)) o[k] = f[k]; }); o.input = Object.assign(f.input, o.input); return o; } }catch(e){} return null; }
@@ -846,18 +1082,25 @@ function list(a){ return '<ul class="clean">' + (a || []).map(function(x){ retur
 function vInput(){
   var i = S.input, c = D.CAT_ORDER.map(function(k){ return '<option value="' + k + '"' + (i.cat === k ? ' selected' : '') + '>' + D.CATEGORIES[k].label + '</option>'; }).join('');
   var pj = projects();
-  function ta(id, label, ph, hint, rows){ return '<div class="fld"><label for="f_' + id + '">' + label + '</label><textarea id="f_' + id + '" data-in="' + id + '" rows="' + (rows || 4) + '" placeholder="' + esc(ph) + '">' + esc(i[id]) + '</textarea>' + (hint ? '<div class="hint">' + hint + '</div>' : '') + '</div>'; }
-  function tx(id, label, ph, type){ return '<div class="fld"><label for="f_' + id + '">' + label + '</label><input type="' + (type || 'text') + '" id="f_' + id + '" data-in="' + id + '" value="' + esc(i[id]) + '" placeholder="' + esc(ph) + '"></div>'; }
+  function bd(id){ var v = S.src[id]; return v === 'url' ? ' <span class="srcb url" id="b_' + id + '">🔗 網址</span>' : v === 'ai' ? ' <span class="srcb ai" id="b_' + id + '">✨ AI 推測</span>' : ''; }
+  function ta(id, label, ph, hint, rows){ return '<div class="fld"><label for="f_' + id + '">' + label + bd(id) + '</label><textarea id="f_' + id + '" data-in="' + id + '" rows="' + (rows || 4) + '" placeholder="' + esc(ph) + '">' + esc(i[id]) + '</textarea>' + (hint ? '<div class="hint">' + hint + '</div>' : '') + '</div>'; }
+  function tx(id, label, ph, type){ return '<div class="fld"><label for="f_' + id + '">' + label + bd(id) + '</label><input type="' + (type || 'text') + '" id="f_' + id + '" data-in="' + id + '" value="' + esc(i[id]) + '" placeholder="' + esc(ph) + '"></div>'; }
   return head(0, '新品開發的系統化方法：先清楚你的重點（產品、客群、評論），再讓規則引擎或 AI 補內容。每一步都對應一段課程提示詞，可直接複製到任何 AI 使用。') +
     '<div class="card" style="margin-bottom:12px"><b>📐 系統化流程</b><div class="flow"><span class="k">產品名稱・類別・客群</span><em>→</em><span>五星評論內容</span><em>＋</em><span>客戶回饋意見</span><em>→</em><span>產品痛點</span><em>→</em><span>產品的五個層次</span><em>→</em><span>七種創新方法</span><em>→</em><span>3C・曼陀羅・檢核表</span><em>→</em><span class="k">新產品概念提案報告</span></div>' +
     '<div class="legend"><span><b style="background:var(--mustard)">A</b>提示詞模板</span><span><b style="background:var(--teal)">A</b>輸入資料</span><span><b style="background:var(--accent)">A</b>提示詞產出內容</span><span>——每一步的產出，會自動成為下一步的輸入資料</span></div></div>' +
     '<div class="fld"><label>載入範例（全部虛構）</label><div style="display:flex;flex-wrap:wrap;gap:6px">' + D.SAMPLES.map(function(s){ return '<button class="chip" type="button" data-sample="' + s.key + '">' + esc(s.label) + '</button>'; }).join('') + '<button class="chip" type="button" data-act="clearInput">🧹 清空</button></div></div>' +
-    '<div class="grid2">' + tx('name', '產品名稱 *', '例如：智慧溫顯保溫杯') + '<div class="fld"><label for="f_cat">產品類別</label><select id="f_cat" data-in="cat">' + c + '</select></div></div>' +
+    '<div class="card urlcard"><b>🔗 貼上商品網址，自動填入欄位</b><div class="hint" style="margin:2px 0 8px">支援 momo（免金鑰）；蝦皮、PChome、Amazon 等其他網站需在 ⚙ 常用設定填入 AI 金鑰，由你的 AI 讀取頁面。只會填入<b>空白</b>的欄位，讀不到的欄位維持空白。</div>' +
+    '<div class="urlrow"><label for="f_urlMe">我方／參考商品網址</label><input type="url" id="f_urlMe" data-in="urlMe" inputmode="url" value="' + esc(i.urlMe) + '" placeholder="https://www.momoshop.com.tw/goods/GoodsDetail.jsp?i_code=…"><button class="btn small teal" type="button" data-act="urlfill" data-k="me">🔗 自動填入</button></div>' +
+    '<div class="urlrow"><label for="f_urlComp">競品網址</label><input type="url" id="f_urlComp" data-in="urlComp" inputmode="url" value="' + esc(i.urlComp) + '" placeholder="https://…"><button class="btn small teal" type="button" data-act="urlfill" data-k="comp">🔗 自動填入</button></div>' +
+    '<div class="tools" style="margin:8px 0 0"><button class="btn small" type="button" data-act="urlfill" data-k="all">🔗 兩個都填入</button><button class="btn small" type="button" data-act="aiBlank" style="border-color:var(--plum);color:var(--plum)">✨ 請 AI 補齊空白欄位</button></div>' +
+    '<div class="urlst" id="urlStatus">' + (S._urlStatus || '') + '</div></div>' +
+    '<div class="grid2">' + tx('name', '產品名稱 *', '例如：智慧溫顯保溫杯') + '<div class="fld"><label for="f_cat">產品類別' + bd('cat') + '</label><select id="f_cat" data-in="cat">' + c + '</select></div></div>' +
     '<div class="grid2">' + tx('seg', '目標客群（可多個，用頓號分隔）', '例如：上班族、健身族群') + tx('pain', '市場痛點或需求', '一般產品哪裡做得不夠好？') + '</div>' +
     '<div class="grid2">' + ta('reviews', '⭐ 五星評論內容（一行一則）', '貼上你的產品或同類熱銷商品的高分評論', '用來找出「顧客真正買單的優點」，評論裡的「唯一缺點、可惜、希望」也會被抓出來。', 7) +
     ta('feedback', '💬 客戶回饋意見／低分評論（一行一則）', '客訴、低分評論、訪談記錄', '用來找出「沒有被滿足的地方」。', 7) + '</div>' +
     '<div class="grid2">' + ta('ourFeat', '我方產品特色（一行一項）', '例如：316 不鏽鋼', '', 4) + ta('compFeat', '競品特色（一行一項）', '例如：24 小時保溫', '', 4) + '</div>' +
-    '<div class="grid3">' + tx('ourPrice', '我方售價（元）', '例如：1590', 'number') + tx('compName', '競品名稱', '例如：經典保溫瓶') + tx('compPrice', '競品售價（元）', '例如：990', 'number') + '</div>' +
+    '<div class="grid3">' + tx('ourPrice', '我方售價', '例如：1590', 'number') + tx('compName', '競品名稱', '例如：經典保溫瓶') + tx('compPrice', '競品售價', '例如：990', 'number') + '</div>' +
+    '<div class="fld curfld"><label for="f_cur">售價幣別</label><select id="f_cur" data-in="cur">' + ['TWD','USD','JPY','EUR','GBP','CNY','HKD','SGD','MYR','THB','AUD','CAD'].map(function(c){ return '<option' + ((i.cur || 'TWD') === c ? ' selected' : '') + '>' + c + '</option>'; }).join('') + '</select><span class="hint">只換顯示單位，不做匯率換算</span></div>' +
     '<div class="tools"><button class="btn primary" type="button" data-act="analyze">🚀 開始系統化分析</button><button class="btn" type="button" data-act="saveProj">💾 儲存專案</button>' + (S.analyzed ? '<span class="muted" style="font-size:.85rem">已分析過；修改資料後再按一次會重新分析。</span>' : '') + '</div>' +
     '<details class="card"' + (pj.length ? ' open' : '') + '><summary style="cursor:pointer;font-weight:700">📁 我的專案（' + pj.length + '）</summary><div class="projlist">' + (pj.length ? pj.map(function(x){ return '<div class="pi"><span>' + esc(x.name) + '　<small class="muted">' + esc(new Date(x.time).toLocaleString('zh-TW')) + '</small></span><button class="btn small" type="button" data-pload="' + x.id + '">開啟</button><button class="btn small ghost" type="button" data-pdel="' + x.id + '">刪除</button></div>'; }).join('') : '<div class="muted" style="padding:6px">還沒有儲存的專案。分析完按「💾 儲存專案」即可保存。</div>') + '</div></details>' +
     navFoot(0);
@@ -1093,7 +1336,7 @@ function bind(){
     if(t.hasAttribute('data-fs')){ settings.fs = t.getAttribute('data-fs'); saveSettings(); applySettings(); return; }
     if(t.hasAttribute('data-sample')){
       var s = D.SAMPLES.filter(function(x){ return x.key === t.getAttribute('data-sample'); })[0];
-      if(s){ S = freshState(); S.input = Object.assign(freshState().input, JSON.parse(JSON.stringify(s.d))); analyze(); render(); toast('已載入範例「' + s.label.replace(/^\S+\s/, '') + '」並完成分析，按下一步查看'); }
+      if(s){ S = freshState(); S.input = Object.assign(freshState().input, JSON.parse(JSON.stringify(s.d))); S.catSet = true; analyze(); render(); toast('已載入範例「' + s.label.replace(/^\S+\s/, '') + '」並完成分析，按下一步查看'); }
       return;
     }
     if(t.hasAttribute('data-mtab')){ S.mtab = t.getAttribute('data-mtab'); save(); render(); return; }
@@ -1103,6 +1346,8 @@ function bind(){
     if(t.hasAttribute('data-xdel')){ var xid = t.getAttribute('data-xdel'); S.extraChecks = S.extraChecks.filter(function(x){ return x.id !== xid; }); delete S.checks[xid]; save(); render(); return; }
     var act = t.getAttribute('data-act'), k = t.getAttribute('data-k');
     if(act === 'analyze'){ if(analyze()){ go(1); } return; }
+    if(act === 'urlfill'){ urlFill(k); return; }
+    if(act === 'aiBlank'){ aiFillBlank(); return; }
     if(act === 'clearInput'){ S = freshState(); save(); render(); toast('已清空，可以輸入新的產品'); return; }
     if(act === 'saveProj'){ saveProject(); updateSetSummaries(); return; }
     if(act === 'copy'){ copyText(promptFor(k)); return; }
@@ -1115,7 +1360,7 @@ function bind(){
   });
   document.addEventListener('input', function(e){
     var t = e.target;
-    if(t.hasAttribute('data-in')){ S.input[t.getAttribute('data-in')] = t.value; save(); return; }
+    if(t.hasAttribute('data-in')){ var fk = t.getAttribute('data-in'); S.input[fk] = t.value; if(S.src[fk]){ delete S.src[fk]; var bb = $('b_' + fk); if(bb) bb.remove(); } if(fk === 'cat') S.catSet = true; save(); return; }
     if(t.hasAttribute('data-note')){ var id = t.getAttribute('data-note'); S.checks[id] = Object.assign(S.checks[id] || {}, {note:t.value}); save(); return; }
     if(t.hasAttribute('data-prop')){ S.propEdit[t.getAttribute('data-prop')] = t.value; if(t.tagName === 'TEXTAREA') autoSize(t); save(); return; }
   });
@@ -1197,7 +1442,7 @@ function init(){
   initMarquee(); initPwa();
   if(!lsGet(WARN_KEY)) setTimeout(function(){ openAbout(); }, 400);
 }
-window._npd = {get S(){ return S; }, analyze:analyze, go:go, render:render, promptFor:promptFor, aiPromptFor:aiPromptFor, conform:conform, buildMd:buildMd, buildPrint:buildPrint, checkItems:checkItems, picks:picks, itypeResult:itypeResult};
+window._npd = {get S(){ return S; }, parseProductUrl:parseProductUrl, applyUrlData:applyUrlData, urlFill:urlFill, aiFillBlank:aiFillBlank, buildBlankPrompt:buildBlankPrompt, catFromText:catFromText, analyze:analyze, go:go, render:render, promptFor:promptFor, aiPromptFor:aiPromptFor, conform:conform, buildMd:buildMd, buildPrint:buildPrint, checkItems:checkItems, picks:picks, itypeResult:itypeResult};
 init();
 })();
 </script>
