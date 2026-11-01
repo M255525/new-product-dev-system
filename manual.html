@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>新品開發系統化工作坊・操作手冊</title>
+<link rel="icon" href="icons/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&family=Noto+Serif+TC:wght@900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1e2a3a;--ink2:#4a5566;--paper:#fffdf8;--bg:#f3eee3;--line:#e2d9c6;--accent:#d9572b;--teal:#13777a}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ink:#eef1f5;--ink2:#c5ccd6;--paper:#1c2533;--bg:#121923;--line:#334155}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans TC',sans-serif;line-height:1.8}
+main{max-width:880px;margin:0 auto;padding:24px 16px 48px}
+h1{font-family:'Noto Serif TC',serif;font-size:28px;margin:0 0 4px}
+h2{font-size:20px;margin:6px 0 8px;border-left:6px solid var(--accent);padding-left:10px}
+section{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:8px 18px 14px;margin-top:14px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td,th{border-bottom:1px solid var(--line);padding:6px 6px;text-align:left;vertical-align:top}
+th{white-space:nowrap}
+a{color:var(--teal);word-break:break-all}
+p,li{color:var(--ink2)}
+code{background:rgba(128,128,128,.15);border-radius:4px;padding:0 4px}
+.toc{display:flex;flex-wrap:wrap;gap:6px}
+.toc a{border:1px solid var(--line);border-radius:999px;padding:2px 10px;text-decoration:none;font-size:14px}
+</style>
+</head>
+<body>
+<main>
+<h1>新品開發系統化工作坊・操作手冊</h1>
+<p><a href="index.html">← 回到工作坊</a></p>
+<div class="toc"><a href="#intro">這是什麼</a><a href="#quick">快速開始</a><a href="#steps">9 個步驟</a><a href="#ai">AI 與提示詞</a><a href="#report">報告與專案</a><a href="#settings">常用設定</a><a href="#faq">常見問題</a><a href="#warn">使用警語</a><a href="#creator">創作者</a></div>
+
+<section id="intro">
+<h2>這是什麼</h2>
+<p>「新品開發系統化工作坊」把課程〈新品發展的系統化方法〉的整套流程做成互動工具：<b>先清楚你的重點，再讓 AI 補內容。</b>從產品名稱、類別、目標客群出發，讀進五星評論與客戶回饋，一步一步推導出產品痛點、產品五層次、七種創新方法、3C 分析、曼陀羅九宮格、五星檢核表、創新類型，最後整合成一份<b>新產品概念提案報告</b>。</p>
+<p>每一步的「產出內容」都會自動成為下一步的「輸入資料」，就像課程裡的 AI 提示詞關係圖：<b>提示詞模板 ＋ 輸入資料 → 提示詞產出內容</b>。</p>
+<p>不需要 API 金鑰也能完整使用：每一步都有<b>規則式結果</b>，也能一鍵<b>複製課程提示詞</b>（已自動帶入你的資料）貼到 ChatGPT、Gemini 或 Claude。</p>
+</section>
+
+<section id="quick">
+<h2>快速開始</h2>
+<ol>
+<li>打開工具，在「步驟 0 產品資料」點一個範例（例如 👛 大容量 RFID 皮夾），工具會自動完成分析。</li>
+<li>按右下角「下一步 →」，依序看 9 個步驟的結果。</li>
+<li>在「步驟 4 七種創新方法」勾選你喜歡的 3–5 個構想，它們會進入曼陀羅與提案。</li>
+<li>在「步驟 7 五星檢核表」點星星調整重要性、打勾記錄已做到的項目。</li>
+<li>在「步驟 8」回答 3 題，判定創新類型。</li>
+<li>在「步驟 9 概念提案報告」修改文字後，按「🖨 列印／存成 PDF」或「⬇ 下載 Markdown」。</li>
+</ol>
+<p>要分析自己的產品：按「🧹 清空」，填入產品名稱、類別、客群、痛點，貼上評論與回饋（一行一則），再按「🚀 開始系統化分析」。</p>
+</section>
+
+<section id="steps">
+<h2>9 個步驟</h2>
+<div class="tw"><table>
+<tr><th>步驟</th><th>對應提示詞</th><th>做什麼</th></tr>
+<tr><td>0 產品資料</td><td>—</td><td>產品名稱、8 種類別（飲品、食品、科技產品、家用品、時尚配件、個人用品、App、服務）、目標客群、市場痛點、五星評論、客戶回饋、雙方特色與售價。</td></tr>
+<tr><td>1 評論優缺點</td><td>A02 五星評論</td><td>把評論拆成句子，依 16 個面向（品質做工、容量收納、尺寸重量、外觀設計、價格 CP 值、耐用度、使用便利、功能表現…）歸類成優點與缺點，統計次數並列出代表句。評論中的「唯一缺點／可惜／希望」也會被抓成待改善。</td></tr>
+<tr><td>2 客戶痛點</td><td>C04 蒐集客戶痛點</td><td>列出目標客戶與使用情境，整理「沒有被滿足的需求」表格：評論證據、嚴重度（★）與改良方向。</td></tr>
+<tr><td>3 產品五層次</td><td>PR01 產品開發五層次</td><td>依科特勒理論產出核心利益、基本產品、期望產品、附加產品、潛在產品，以及五層次價值鏈總結。</td></tr>
+<tr><td>4 七種創新方法</td><td>L10_4 新產品概念提案</td><td>屬性列舉、強迫關係、逆向假設、腦力激盪（10 點子）、結構分析（維度×選項×組合）、全新情境、心智圖，加上創意總表。勾選 ☑ 構想會帶入後續步驟；「🔀 換一批」可重新組合。</td></tr>
+<tr><td>5 3C 分析</td><td>A4 銷售 3C 分析</td><td>相同處、不同處、客戶眼中的你、客戶眼中的競爭者、價格比較與策略建議。競品特色若剛好打中你的評論痛點會特別標示。</td></tr>
+<tr><td>6 曼陀羅九宮格</td><td>L18 曼陀羅思考法</td><td>9×9 九宮格：主題 → 8 面向（核心功能、使用情境、材質技術、外觀設計、價格方案、通路銷售、服務體驗、品牌溝通）→ 64 個子想法，格子可直接點擊修改。手機上自動改為清單。</td></tr>
+<tr><td>7 五星檢核表</td><td>根據九宮格製作檢核表</td><td>從評論缺點、優點、期望產品與九宮格整理檢核項目，以五星評定重要性；可調整星數、打勾、寫備註、新增自訂項目。</td></tr>
+<tr><td>8 創新類型</td><td>新產品規劃</td><td>回答 3 題，判定連續性／動態連續性／非連續性創新，並給行銷建議與主要風險。</td></tr>
+<tr><td>9 概念提案報告</td><td>L10_4 最終產出</td><td>產品名稱、核心價值、目標用戶、使用情境、痛點與解決方式、設計／技術亮點、商業價值、風險、MVP 建議（全部可修改），以及新產品開發七階段進度表。</td></tr>
+</table></div>
+</section>
+
+<section id="ai">
+<h2>AI 與提示詞</h2>
+<ul>
+<li><b>📋 複製提示詞</b>：每一步都有，內容依課程提示詞模板，並自動帶入你的產品資料與前一步結果，貼到任何 AI 都能用，不需要金鑰。</li>
+<li><b>✨ 用 AI 產生這一步</b>（選用）：到「⚙ 常用設定 → AI 服務」選服務商（Claude、OpenAI、Gemini、OpenRouter）並填入自己的 API 金鑰。AI 會依同樣的結構回傳結果，取代這一步的規則式結果，後面的步驟也會跟著更新；步驟標題會顯示「✨ AI 產生」。</li>
+<li>不滿意可以按「↺ 改回規則式」。AI 回覆格式不對時，會保留規則式結果並顯示錯誤原因。</li>
+<li>在步驟 0 修改資料後重新按「開始系統化分析」，先前的 AI 結果、勾選與手動修改會一起清除。</li>
+</ul>
+</section>
+
+<section id="report">
+<h2>報告與專案</h2>
+<ul>
+<li><b>🖨 列印／存成 PDF</b>：會整理成一份完整報告（概念提案＋九大分析表），在列印對話框選「另存為 PDF」即可。報告署名可在「⚙ 常用設定 → 報告設定」填寫。</li>
+<li><b>⬇ 下載 Markdown</b>：同樣內容的 .md 檔，可貼到 Notion、HackMD 或 Word。</li>
+<li><b>💾 儲存專案</b>：存到瀏覽器（最多 40 個），在步驟 0 的「📁 我的專案」可以開啟或刪除。</li>
+<li><b>匯出／匯入 JSON</b>：在「⚙ 常用設定 → 資料管理」，可備份或換電腦繼續做。</li>
+</ul>
+</section>
+
+<section id="settings">
+<h2>常用設定</h2>
+<p>按右上角「⚙ 常用設定」，每一組設定都是可收合的區塊，標題右邊會顯示目前的值，並會記住你上次展開哪幾組：</p>
+<ul>
+<li>✨ AI 服務：服務商、模型、API 金鑰、測試連線。</li>
+<li>🖥 顯示與儲存：字級（標準／大／特大）、頂部跑馬燈、自動保存目前分析。</li>
+<li>🖨 報告設定：提案人／組別、單位或課程名稱。</li>
+<li>💾 資料管理：匯出、匯入、恢復預設、清除全部本機資料。</li>
+<li>ℹ 關於本工具：操作手冊、使用警語、創作者資訊、加入主畫面、訪客數。</li>
+</ul>
+<p>📲 <b>加入主畫面</b>：Chrome／Edge 會跳出安裝視窗；iPhone／iPad 請在 Safari 按「分享 → 加入主畫面」。</p>
+</section>
+
+<section id="faq">
+<h2>常見問題</h2>
+<p><b>Q：評論要貼多少才夠？</b><br>建議 5 則以上的五星評論、5 則以上的回饋或低分評論。規則式分析靠關鍵字比對，評論越多，面向與次數越可靠。</p>
+<p><b>Q：為什麼某句評論被分到奇怪的面向？</b><br>規則式只看關鍵字，難免誤判，請把它當作初稿；想要更精準可以用 AI 產生，或複製提示詞到 AI 分析。</p>
+<p><b>Q：可以直接抓電商網站的評論嗎？</b><br>不行，本工具不會自動抓取任何網站。請自行複製評論文字，並遵守平台的使用條款。</p>
+<p><b>Q：資料會上傳嗎？</b><br>不會。資料只存在你的瀏覽器；只有你按「用 AI 產生」時，資料才會送到你自己設定的 AI 服務商。</p>
+</section>
+
+<section id="warn">
+<h2>使用警語</h2>
+<ul>
+<li>本工具是教學用的新品開發思考框架。規則式分析以關鍵字比對與內建模板為主，AI 產出也可能有誤或過度推論，結果僅供發想參考，不構成商業、投資或法律建議。</li>
+<li>請勿貼上含他人姓名、電話、地址等個資的評論；引用電商平台評論請自行確認平台使用條款。</li>
+<li>AI 功能需自備 API 金鑰，金鑰只存在你的瀏覽器；使用 AI 可能產生費用。</li>
+<li>內建範例的品牌、評論、競品與價格皆為虛構。</li>
+<li>資料只存在本機瀏覽器，清除瀏覽器資料就會消失，重要專案請匯出 JSON 備份。</li>
+</ul>
+</section>
+
+
+<section id="creator">
+<h2>創作者</h2>
+<div class="mk-creator">
+<style>.mk-creator{line-height:1.75}.mk-creator h3{margin:14px 0 6px;font-size:1.05em}.mk-creator table{width:100%;border-collapse:collapse;font-size:.95em}.mk-creator td,.mk-creator th{text-align:left;padding:5px 6px;border-bottom:1px solid rgba(128,128,128,.3);vertical-align:top}.mk-creator th{white-space:nowrap}.mk-creator ul{margin:4px 0;padding-left:1.4em}.mk-creator .mk-tags{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0}.mk-creator .mk-tags span{border:1px solid rgba(128,128,128,.45);border-radius:999px;padding:1px 10px;font-size:.9em}</style>
+<p><b>Mark Tsai（蔡豐全）</b>為深耕創業輔導與數位轉型領域的顧問與講師，長期擔任勞動力發展署創業顧問與多項政府計畫的顧問、業師與評審委員，協助中小企業導入數據分析與 AI 工具、申請政府補助計畫，並具備跨境電商實務與講師培訓的豐富經驗。本工具是其推廣 AI 工具運用於教學與課程情境的作品之一。</p>
+<p>聯絡信箱：<a href="mailto:tsaimark@gmail.com">tsaimark@gmail.com</a></p>
+<h3>專長</h3>
+<div class="mk-tags"><span>銷售數據分析</span><span>AI 工具運用</span><span>政府補助計畫申請</span><span>創業</span><span>跨境電商</span></div>
+<h3>證照</h3>
+<table>
+<thead><tr><th>年度</th><th>證照</th></tr></thead>
+<tbody>
+<tr><td>2013</td><td>青創總會 創業輔導顧問師班</td></tr>
+<tr><td>2014</td><td>青創總會 網路行銷講師培訓班</td></tr>
+<tr><td>2016</td><td>阿里巴巴 P4P 認證講師</td></tr>
+<tr><td>2017</td><td>iCap 訓練規劃與評量職能基準課程</td></tr>
+<tr><td>2023</td><td>iCap 職能導向課程申請認證實作班</td></tr>
+<tr><td>2025</td><td>iPAS AI 應用規劃師－初級</td></tr>
+<tr><td>2025</td><td>新北市社會局 社區數位陪伴員</td></tr>
+</tbody>
+</table>
+<h3>經歷</h3>
+<ul>
+<li>勞動力發展署桃竹苗分署 創業顧問（2017－迄今）</li>
+<li>勞動力發展署（北北基）小型企業人力提升計畫 顧問（2019－迄今）</li>
+<li>勞動力發展署（桃竹苗）小型企業人力提升計畫 顧問（2019－迄今）</li>
+<li>農業部農業科技司「科技農企業雙軸轉型躍升發展」科技計畫 業師（2025－2026）</li>
+<li>勞動力發展署 企業人力資源提升計畫 審查委員（2024）</li>
+<li>勞動力發展署 職前訓練評鑑計畫 委員（2022）</li>
+<li>勞動部桃竹苗分署 桃竹苗區域運籌人力資源整合服務計畫 顧問（2022－2023）</li>
+<li>經濟部中小企業處 SBIR 海選專案 評審委員（2019－2024）</li>
+<li>勞動力發展署 數位學習課程清單審查會議 審查委員（2024－2025）</li>
+<li>輔仁大學創新跨領域學院 課務委員（2024－2025）</li>
+<li>台北市進出口商業同業公會 跨境電商生態村 顧問</li>
+<li>台灣網商協會 顧問</li>
+<li>中華職能開發策進會 顧問（2018－2020）</li>
+<li>新北市汽車美容人員職業工會 顧問（2023－迄今）</li>
+<li>中華網路行銷講師協會 顧問（2022－迄今）</li>
+<li>新北市社企電商基地 輔導顧問（2018－2020）</li>
+<li>阿里巴巴國際站平台 認證講師（2016）</li>
+<li>巨匠電腦 跨境電子商務班 講師（2016－2017）</li>
+</ul>
+</div>
+</section>
+</main>
+</body>
+</html>
