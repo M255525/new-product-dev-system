@@ -237,7 +237,15 @@ body:has(#entryGate:not(.hidden)){overflow:hidden}
 .srcb{font-size:.7rem;border-radius:6px;padding:0 6px;font-weight:700;margin-left:4px;vertical-align:1px}
 .srcb.url{background:var(--teal2);color:var(--teal)}
 .srcb.ai{background:#eadcf1;color:var(--plum)}
-.urlcard{margin-bottom:12px;border-left:4px solid var(--teal)}
+.urlcard{margin-bottom:12px;border-left:4px solid var(--teal);padding:0}
+.urlcard>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:10px 14px;user-select:none}
+.urlcard>summary::-webkit-details-marker{display:none}
+.urlcard>summary::after{content:'▸';color:var(--sub);transition:transform .2s;flex:0 0 auto}
+.urlcard[open]>summary::after{transform:rotate(90deg)}
+.urlcard>summary:hover .ut{color:var(--teal)}
+.urlcard .ut{font-weight:700;flex:0 0 auto}
+.urlcard .us{margin-left:auto;font-size:.8rem;color:var(--sub);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right}
+.urlbody{padding:0 14px 12px}
 .urlrow{display:grid;grid-template-columns:150px minmax(0,1fr) auto;gap:8px;align-items:center;margin-bottom:6px}
 .urlrow label{font-size:.84rem;font-weight:600;color:var(--sub)}
 .urlst{font-size:.85rem;margin-top:8px;line-height:1.7}
@@ -270,6 +278,10 @@ body:has(#entryGate:not(.hidden)){overflow:hidden}
   .set-sec .ssv{flex:1 1 100%;order:3;margin-left:0;text-align:left;white-space:normal}
   .nav2 .btn{flex:1;justify-content:center}
   .urlrow{grid-template-columns:minmax(0,1fr)}
+  .urlcard>summary{flex-wrap:wrap}
+  .urlcard .ut{flex:1 1 0}
+  .urlcard>summary::after{order:2}
+  .urlcard .us{flex:1 1 100%;order:3;margin-left:0;text-align:left;white-space:normal}
   .urlrow .btn{justify-self:stretch;justify-content:center}
   input[type=text],input[type=number],input[type=url],input[type=password],select,textarea{font-size:16px}
   .tools .btn{flex:1 1 calc(50% - 8px);justify-content:center}
@@ -1002,6 +1014,13 @@ function applyUrlData(isMe, info, data){
   }
   return {filled:filled, notes:notes, pageOk:true};
 }
+var URL_OPEN_KEY = PREFIX + 'urlOpen';
+function urlCardOpen(){ return lsGet(URL_OPEN_KEY) === '1'; }
+function urlSummary(){
+  var n = [S.input.urlMe, S.input.urlComp].filter(function(x){ return String(x || '').trim(); }).length;
+  var filled = Object.keys(S.src || {}).length;
+  return n ? '已貼 ' + n + ' 個網址' + (filled ? '・' + filled + ' 個欄位自動填入' : '') : 'momo 免金鑰・其他網站用 AI 讀取・只填空白欄位';
+}
 var urlBusy = false;
 function setUrlStatus(h){ var el = $('urlStatus'); if(el) el.innerHTML = h; S._urlStatus = h; }
 async function urlFill(which){
@@ -1129,11 +1148,11 @@ function vInput(){
     '<div class="card" style="margin-bottom:12px"><b>📐 系統化流程</b><div class="flow"><span class="k">產品名稱・類別・客群</span><em>→</em><span>五星評論內容</span><em>＋</em><span>客戶回饋意見</span><em>→</em><span>產品痛點</span><em>→</em><span>產品的五個層次</span><em>→</em><span>七種創新方法</span><em>→</em><span>3C・曼陀羅・檢核表</span><em>→</em><span class="k">新產品概念提案報告</span></div>' +
     '<div class="legend"><span><b style="background:var(--mustard)">A</b>提示詞模板</span><span><b style="background:var(--teal)">A</b>輸入資料</span><span><b style="background:var(--accent)">A</b>提示詞產出內容</span><span>——每一步的產出，會自動成為下一步的輸入資料</span></div></div>' +
     '<div class="fld"><label>載入範例（全部虛構）</label><div style="display:flex;flex-wrap:wrap;gap:6px">' + D.SAMPLES.map(function(s){ return '<button class="chip" type="button" data-sample="' + s.key + '">' + esc(s.label) + '</button>'; }).join('') + '<button class="chip" type="button" data-act="clearInput">🧹 清空</button></div></div>' +
-    '<div class="card urlcard"><b>🔗 貼上商品網址，自動填入欄位</b><div class="hint" style="margin:2px 0 8px">支援 momo（免金鑰）；蝦皮、PChome、Amazon 等其他網站需在 ⚙ 常用設定填入 AI 金鑰，由你的 AI 讀取頁面。只會填入<b>空白</b>的欄位，讀不到的欄位維持空白。</div>' +
+    '<details class="card urlcard" id="urlCard"' + (urlCardOpen() ? ' open' : '') + '><summary><span class="ut">🔗 貼上商品網址，自動填入欄位</span><span class="us">' + esc(urlSummary()) + '</span></summary><div class="urlbody"><div class="hint" style="margin:2px 0 8px">支援 momo（免金鑰）；蝦皮、PChome、Amazon 等其他網站需在 ⚙ 常用設定填入 AI 金鑰，由你的 AI 讀取頁面。只會填入<b>空白</b>的欄位，讀不到的欄位維持空白。</div>' +
     '<div class="urlrow"><label for="f_urlMe">我方／參考商品網址</label><input type="url" id="f_urlMe" data-in="urlMe" inputmode="url" value="' + esc(i.urlMe) + '" placeholder="https://www.momoshop.com.tw/goods/GoodsDetail.jsp?i_code=…"><button class="btn small teal" type="button" data-act="urlfill" data-k="me">🔗 自動填入</button></div>' +
     '<div class="urlrow"><label for="f_urlComp">競品網址</label><input type="url" id="f_urlComp" data-in="urlComp" inputmode="url" value="' + esc(i.urlComp) + '" placeholder="https://…"><button class="btn small teal" type="button" data-act="urlfill" data-k="comp">🔗 自動填入</button></div>' +
     '<div class="tools" style="margin:8px 0 0"><button class="btn small" type="button" data-act="urlfill" data-k="all">🔗 兩個都填入</button><button class="btn small" type="button" data-act="aiBlank" style="border-color:var(--plum);color:var(--plum)">✨ 請 AI 補齊空白欄位</button></div>' +
-    '<div class="urlst" id="urlStatus">' + (S._urlStatus || '') + '</div></div>' +
+    '<div class="urlst" id="urlStatus">' + (S._urlStatus || '') + '</div></div></details>' +
     '<div class="grid2">' + tx('name', '產品名稱 *', '例如：智慧溫顯保溫杯') + '<div class="fld"><label for="f_cat">產品類別' + bd('cat') + '</label><select id="f_cat" data-in="cat">' + c + '</select></div></div>' +
     '<div class="grid2">' + tx('seg', '目標客群（可多個，用頓號分隔）', '例如：上班族、健身族群') + tx('pain', '市場痛點或需求', '一般產品哪裡做得不夠好？') + '</div>' +
     '<div class="grid2">' + ta('reviews', '⭐ 五星評論內容（一行一則）', '貼上你的產品或同類熱銷商品的高分評論', '用來找出「顧客真正買單的優點」，評論裡的「唯一缺點、可惜、希望」也會被抓出來。', 7) +
@@ -1429,6 +1448,7 @@ function bind(){
   $('settingsBtn').addEventListener('click', function(){ openSettings(); });
   $('settingsClose').addEventListener('click', function(){ openSettings(false); $('settings').hidden = true; $('settingsBtn').setAttribute('aria-expanded', 'false'); });
   document.querySelectorAll('.set-sec').forEach(function(d){ d.addEventListener('toggle', saveFold); });
+  document.addEventListener('toggle', function(e){ if(e.target && e.target.id === 'urlCard') lsSet(URL_OPEN_KEY, e.target.open ? '1' : '0'); }, true);
   $('foldAllOpen').addEventListener('click', function(){ document.querySelectorAll('.set-sec').forEach(function(d){ d.open = true; }); saveFold(); });
   $('foldAllClose').addEventListener('click', function(){ document.querySelectorAll('.set-sec').forEach(function(d){ d.open = false; }); saveFold(); });
   $('aiProvider').addEventListener('change', function(){ renderModelOptions(this.value, ''); persistApi(); });

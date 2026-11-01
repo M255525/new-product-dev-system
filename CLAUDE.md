@@ -15,6 +15,7 @@
 - 報告：`buildPrint()` 填 `#printReport`＋`@media print` 只印報告；`buildMd()` 下載 Markdown。
 - 儲存鍵前綴 `npdSys.`：settings／draft（自動保存）／projects（最多 40）／warned／setOpen／marquee。
 - **貼網址自動填入**（2026-11-01 使用者要求）：步驟 0 `.urlcard`，`S.input.urlMe／urlComp` 各一個「🔗 自動填入」（`data-act="urlfill" data-k="me|comp|all"`）。`parseProductUrl()` 免金鑰辨識平台／幣別／網址裡的商品名；**momo** 打 ecommerce-competitor-analyzer 的 Cloudflare Worker `ecommerce-product-reader`（只允許 Origin m255525.github.io 與 localhost:8843，**本機 8846 預覽會被擋，測試要 mock fetch**）；其他平台有金鑰才用 `callLLMWeb()`（Claude web_fetch／Gemini url_context／OpenAI Responses web_search／OpenRouter web plugin）讀頁，prompt 規定讀不到填 null、評論只能抄頁面原句。`applyUrlData()` **只填空白欄位**、讀不到維持空白；幣別不同時售價留空、不換匯（`S.input.cur`，`curUnit()` 取代原本寫死的「元」）。類別用 `catFromText()` 對應 8 類，`S.catSet` 記錄類別是否已被使用者／範例／網址設定過（select 永遠有值，不能用空白判斷）。
+- 網址區是 `<details id="urlCard">`（使用者要求收合讓版面精簡）：預設收合，展開狀態存 `npdSys.urlOpen`；summary 右側 `urlSummary()` 顯示已貼幾個網址／幾個欄位自動填入。
 - **✨ 請 AI 補齊空白欄位**（`aiFillBlank()`）：不讀網頁，依已知資料推測 `blankFields()`，只補空白；評論是模擬資料（狀態列與手冊有寫）；沒金鑰時改為複製 `buildBlankPrompt()`。
 - 來源標記 `S.src[欄位]`＝`'url'`（🔗 網址）／`'ai'`（✨ AI 推測），顯示在欄位標籤 `.srcb#b_欄位`；使用者改欄位時（input 事件）刪標記與 badge。
 - **RWD**：≤980px 步驟列橫向捲動；≤700px 單欄、網址列改上下排（按鈕撐滿）、輸入框 16px 防 iOS 縮放、工具列按鈕兩欄、曼陀羅改清單。320／360／414／768／1024 皆驗證無水平捲動。
