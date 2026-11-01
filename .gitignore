@@ -2,3 +2,5 @@
 build/
 dist/
 *.bak
+.clasp.json
+gas/.clasp.json
