@@ -360,7 +360,7 @@ body:has(#entryGate:not(.hidden)){overflow:hidden}
     <summary><span class="sst">🖥 顯示與儲存</span><span class="ssv" id="sumDisplay"></span></summary>
     <div class="set-body"><div class="set-grid">
       <div><label>字級</label><div class="seg" id="fsSeg"><button type="button" data-fs="">標準</button><button type="button" data-fs="l">大</button><button type="button" data-fs="xl">特大</button></div></div>
-      <div><label><input type="checkbox" id="setMarquee"> 顯示頂部跑馬燈公告</label><label><input type="checkbox" id="setAutoSave"> 自動保存目前的分析（重新整理不會消失）</label></div>
+      <div><label><input type="checkbox" id="setAutoSave"> 自動保存目前的分析（重新整理不會消失）</label></div>
     </div></div>
   </details>
   <details class="set-sec" data-sec="report">
@@ -463,7 +463,7 @@ function stars(n){ n = clamp(Math.round(n) || 0, 0, 5); return '★★★★★'
 var PREFIX = 'npdSys.';
 var SET_KEY = PREFIX + 'settings', DRAFT_KEY = PREFIX + 'draft', PROJ_KEY = PREFIX + 'projects', WARN_KEY = PREFIX + 'warned', FOLD_KEY = PREFIX + 'setOpen';
 var DEFAULTS = {provider:'claude', model:'', apiKey:'', fs:'', marquee:true, autoSave:true, author:'', org:''};
-var settings = (function(){ var s = {}; try{ s = JSON.parse(lsGet(SET_KEY) || '{}') || {}; }catch(e){} var o = JSON.parse(JSON.stringify(DEFAULTS)); Object.keys(s).forEach(function(k){ if(k in o) o[k] = s[k]; }); return o; })();
+var settings = (function(){ var s = {}; try{ s = JSON.parse(lsGet(SET_KEY) || '{}') || {}; }catch(e){} var o = JSON.parse(JSON.stringify(DEFAULTS)); Object.keys(s).forEach(function(k){ if(k in o) o[k] = s[k]; }); o.marquee = true; /* 跑馬燈為必備，不可關閉 */ return o; })();
 function saveSettings(){ lsSet(SET_KEY, JSON.stringify(settings)); updateSetSummaries(); }
 
 var AI_PROVIDERS = {
@@ -1330,7 +1330,7 @@ function openSettings(force, sec){
 function updateSetSummaries(){
   var pv = AI_PROVIDERS[settings.provider] || AI_PROVIDERS.claude;
   $('sumAi').textContent = pv.label.replace(/（.*）/, '') + '／' + curModel() + '｜' + (settings.apiKey ? '✅ 已填金鑰' : '未填金鑰（規則式＋複製提示詞）');
-  $('sumDisplay').textContent = '字級 ' + ({'':'標準', l:'大', xl:'特大'}[settings.fs || ''] || '標準') + '｜跑馬燈 ' + (settings.marquee ? '開' : '關') + '｜自動保存 ' + (settings.autoSave ? '開' : '關');
+  $('sumDisplay').textContent = '字級 ' + ({'':'標準', l:'大', xl:'特大'}[settings.fs || ''] || '標準') + '｜自動保存 ' + (settings.autoSave ? '開' : '關');
   $('sumReport').textContent = (settings.author ? '署名：' + settings.author : '未署名') + (settings.org ? '｜' + settings.org : '');
   $('sumData').textContent = '已存專案 ' + projects().length + ' 個';
 }
@@ -1342,7 +1342,7 @@ function fillSettingsUI(){
   $('aiProvider').value = AI_PROVIDERS[settings.provider] ? settings.provider : 'claude';
   renderModelOptions($('aiProvider').value, settings.model);
   $('aiKey').value = settings.apiKey || '';
-  $('setMarquee').checked = !!settings.marquee; $('setAutoSave').checked = !!settings.autoSave;
+  $('setAutoSave').checked = !!settings.autoSave;
   $('setAuthor').value = settings.author || ''; $('setOrg').value = settings.org || '';
   applySettings(); updateSetSummaries();
 }
@@ -1461,7 +1461,6 @@ function bind(){
     try{ var t = await callLLM(settings.provider, curModel(), settings.apiKey, '請只回覆兩個字：成功'); $('testAiMsg').textContent = '✅ 連線成功：' + t.slice(0, 20); }
     catch(e){ $('testAiMsg').textContent = '❌ ' + e.message; }
   });
-  $('setMarquee').addEventListener('change', function(){ settings.marquee = this.checked; saveSettings(); if(window.__applyMarquee) window.__applyMarquee(); });
   $('setAutoSave').addEventListener('change', function(){ settings.autoSave = this.checked; saveSettings(); if(!settings.autoSave) lsDel(DRAFT_KEY); else save(); });
   $('setAuthor').addEventListener('input', function(){ settings.author = this.value; saveSettings(); });
   $('setOrg').addEventListener('input', function(){ settings.org = this.value; saveSettings(); });

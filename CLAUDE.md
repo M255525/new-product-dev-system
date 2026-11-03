@@ -20,7 +20,7 @@
 - 來源標記 `S.src[欄位]`＝`'url'`（🔗 網址）／`'ai'`（✨ AI 推測），顯示在欄位標籤 `.srcb#b_欄位`；使用者改欄位時（input 事件）刪標記與 badge。
 - **RWD**：≤980px 步驟列橫向捲動；≤700px 單欄、網址列改上下排（按鈕撐滿）、輸入框 16px 防 iOS 縮放、工具列按鈕兩欄、曼陀羅改清單。320／360／414／768／1024 皆驗證無水平捲動。
 - **登入序號閘門（六件套第 6 件，2026-11-01）**：比照 ecommerce-competitor-analyzer。`#entryGate` 全螢幕擋住整個工具，script 在 `</body>` 前獨立 IIFE（`window.__npdGate`）。序號表＝共用試算表「跨境電商工具」（`1sUrMVQ7T3_JOG_vMY1peGWxxxbw8PTxbbXBhj2IPM6s`）分頁 **「新品開發系統化工作坊」**；表頭比對「序號／開始日期／結束日期」，12 個月；選填「人數限制」「目前登入人數」（只在登入當下把關，`renew:true` 背景重驗不踢人，40 分鐘逾時，pagehide sendBeacon 釋出）。後端 `gas/Code.js`（`SHEET_NAME` 固定、找不到分頁回 server_error，不退回第一個分頁），clasp scriptId `1D6FWEofMdrLN0aZRz3b-9XkmoUe8MWYIy0R8ftp17Y0QY3OFyGBETc7C`（`gas/.clasp.json` 不進版控）；改後端：`cd gas && clasp push --force && clasp deploy -i AKfycbxBO293elJaqDJczIOP2XYGdmFDlQXsK0bQ6Ye0q0gHeFYI14lJdmDXj3nV43GjPSA-SA`（更新既有部署，網址不變）。localStorage `npdEntrySerial`／`npdEntryClientId`（刻意不用 `npdSys.` 前綴，清除本機資料不會登出）。頂部 `#headcountChip`、⚙「🔐 登入序號」區（`#licBadge`／`#headcountBadge`／`#btnLogout`）。⚠ 純前端閘門，懂 DevTools 可移除遮罩（已知取捨）。測試時 mock `AKfycbxBO293` 的 fetch 並預設 `npdEntrySerial`。
-- 標準配備：跑馬燈（工作區公告 GAS、滑鼠移入暫停）、⚙ 常用設定（收合式＋關於本工具）、警語（頁面橫幅＋首訪彈窗）、manual.html#creator 完整版、PWA、visitor-badge。
+- 標準配備：跑馬燈（工作區公告 GAS、滑鼠移入暫停；**必備、不可關閉**——⚙ 不提供開關，載入設定時強制 `marquee=true` 覆蓋舊存檔）、⚙ 常用設定（收合式＋關於本工具）、警語（頁面橫幅＋首訪彈窗）、manual.html#creator 完整版、PWA、visitor-badge。
 - 測試掛鉤 `window._npd`。曼陀羅 ≤700px 改為清單版；導覽 ≤980px 變橫向捲動列。
 
 ## 驗證（2026-11-01，Python Playwright）
