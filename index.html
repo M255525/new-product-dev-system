@@ -366,8 +366,17 @@ body:has(#entryGate:not(.hidden)){overflow:hidden}
   <details class="set-sec" data-sec="report">
     <summary><span class="sst">🖨 報告設定</span><span class="ssv" id="sumReport"></span></summary>
     <div class="set-body"><div class="set-grid">
-      <div><label for="setAuthor">報告署名（提案人／組別）</label><input type="text" id="setAuthor" placeholder="例如：第 3 組 王小明"></div>
+      <div><label for="setName">姓名</label><input type="text" id="setName" placeholder="例如：王小明" autocomplete="off"></div>
+      <div><label for="setStuId">學號</label><input type="text" id="setStuId" placeholder="例如：410912345" autocomplete="off"></div>
+      <div><label for="setDept">系所</label><input type="text" id="setDept" placeholder="例如：企業管理學系" autocomplete="off"></div>
+      <div><label for="setGroup">組別</label><input type="text" id="setGroup" placeholder="例如：第 3 組" autocomplete="off"></div>
       <div><label for="setOrg">單位／課程名稱</label><input type="text" id="setOrg" placeholder="例如：電商平台銷售策略"></div>
+    </div>
+    <p style="margin:8px 0 0;font-size:.85rem;color:var(--sub)">以上資料（選填）只存在這台裝置，會印在 PDF 報告、Markdown 與練習證明圖檔上。</p>
+    <div class="about-row" style="margin-top:8px">
+      <button class="btn small" type="button" data-act="print">🖨 列印／存成 PDF</button>
+      <button class="btn small" type="button" data-act="md">⬇ 下載 Markdown</button>
+      <button class="btn small teal" type="button" data-act="cert">🎓 下載練習證明（圖檔）</button>
     </div></div>
   </details>
   <details class="set-sec" data-sec="data">
@@ -462,7 +471,7 @@ function stars(n){ n = clamp(Math.round(n) || 0, 0, 5); return '★★★★★'
 /* ================= 設定 ================= */
 var PREFIX = 'npdSys.';
 var SET_KEY = PREFIX + 'settings', DRAFT_KEY = PREFIX + 'draft', PROJ_KEY = PREFIX + 'projects', WARN_KEY = PREFIX + 'warned', FOLD_KEY = PREFIX + 'setOpen';
-var DEFAULTS = {provider:'claude', model:'', apiKey:'', fs:'', marquee:true, autoSave:true, author:'', org:''};
+var DEFAULTS = {provider:'claude', model:'', apiKey:'', fs:'', marquee:true, autoSave:true, author:'', stuName:'', stuId:'', dept:'', group:'', org:''};
 var settings = (function(){ var s = {}; try{ s = JSON.parse(lsGet(SET_KEY) || '{}') || {}; }catch(e){} var o = JSON.parse(JSON.stringify(DEFAULTS)); Object.keys(s).forEach(function(k){ if(k in o) o[k] = s[k]; }); o.marquee = true; /* 跑馬燈為必備，不可關閉 */ return o; })();
 function saveSettings(){ lsSet(SET_KEY, JSON.stringify(settings)); updateSetSummaries(); }
 
@@ -1264,7 +1273,7 @@ function vItype(){
 function vProposal(){
   var p = proposalEff();
   return head(9, '整合前面所有步驟，產出一份「新產品概念提案」。每一格都可以直接修改；下方「新產品開發過程」七階段可記錄進度。完成後可列印成 PDF 或下載 Markdown。', 'L10_4 最終產出') +
-    toolsBar('proposal', '<button class="btn small teal" type="button" data-act="print">🖨 列印／存成 PDF</button><button class="btn small" type="button" data-act="md">⬇ 下載 Markdown</button><button class="btn small" type="button" data-act="saveProj">💾 儲存專案</button>') +
+    toolsBar('proposal', '<button class="btn small teal" type="button" data-act="print">🖨 列印／存成 PDF</button><button class="btn small" type="button" data-act="md">⬇ 下載 Markdown</button><button class="btn small" type="button" data-act="cert">🎓 練習證明（圖檔）</button><button class="btn small" type="button" data-act="saveProj">💾 儲存專案</button>') +
     '<div class="prop">' + PROP_FIELDS.map(function(f){ var v = p[f[0]] || ''; return '<div class="pf' + (f[0] === 'name' || f[0] === 'value' ? ' wide' : '') + '"><label>' + f[2] + ' ' + f[1] + (S.propEdit[f[0]] != null ? ' <small class="muted">（已手動修改）</small>' : '') + '</label>' + (f[0] === 'name' ? '<input type="text" data-prop="name" value="' + esc(v) + '">' : '<textarea data-prop="' + f[0] + '" rows="' + Math.max(2, String(v).split('\n').length + 1) + '">' + esc(v) + '</textarea>') + '</div>'; }).join('') + '</div>' +
     '<h3 style="margin:18px 0 6px">🛤 新產品開發過程（七階段）</h3><div class="tw"><table class="t road"><tr><th>階段</th><th>說明</th><th>本案下一步</th><th>進度</th></tr>' +
     D.NPD_STAGES.map(function(s, i){ var v = S.road[i] || 0; return '<tr class="s' + v + '"><td><b>' + (i + 1) + '. ' + esc(s.n) + '</b></td><td class="muted">' + esc(s.d) + '</td><td>' + list(s.tasks) + '</td><td><select data-road="' + i + '"><option value="0"' + (v === 0 ? ' selected' : '') + '>未開始</option><option value="1"' + (v === 1 ? ' selected' : '') + '>進行中</option><option value="2"' + (v === 2 ? ' selected' : '') + '>完成</option></select></td></tr>'; }).join('') + '</table></div>' + navFoot(9);
@@ -1281,6 +1290,36 @@ function autoSize(t){ t.style.height = 'auto'; t.style.height = (t.scrollHeight 
 function go(i){ S.step = clamp(i, 0, STEPS.length - 1); if(S.analyzed && BUILDERS.proposal && S.step === 9){ S.rule.proposal = buildProposal(); } save(); render(); var st = $('stage'); var y = st.getBoundingClientRect().top + window.scrollY - (window.innerWidth <= 980 ? 70 : 12) - (document.body.classList.contains('has-marquee') ? 30 : 0); if(window.scrollY > y) window.scrollTo({top:y, behavior:'smooth'}); }
 
 /* ================= 報告 ================= */
+function idRows(){ return [['姓名', settings.stuName], ['學號', settings.stuId], ['系所', settings.dept], ['組別', settings.group]].filter(function(x){ return String(x[1] || '').trim(); }).map(function(x){ return [x[0], String(x[1]).trim()]; }); }
+function wrapCanvasText(ctx, text, maxW){ var lines = [], cur = ''; String(text).split('').forEach(function(ch){ if(ctx.measureText(cur + ch).width > maxW && cur){ lines.push(cur); cur = ch; } else cur += ch; }); if(cur) lines.push(cur); return lines; }
+function downloadCert(){
+  if(!S.analyzed){ toast('請先完成分析，再下載練習證明'); return; }
+  if(!idRows().length){ toast('請先在「🖨 報告設定」填寫姓名／學號等資料'); openSettings(true, 'report'); return; }
+  S.rule.proposal = buildProposal();
+  var d = reportData(), W = 1000, H = 700, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  var c = cv.getContext('2d'), F = "'Noto Sans TC','Microsoft JhengHei',sans-serif", SF = "'Noto Serif TC','Noto Sans TC','Microsoft JhengHei',serif";
+  c.fillStyle = '#fffdf8'; c.fillRect(0, 0, W, H);
+  c.strokeStyle = '#d9572b'; c.lineWidth = 6; c.strokeRect(22, 22, W - 44, H - 44);
+  c.strokeStyle = '#13777a'; c.lineWidth = 1.5; c.strokeRect(36, 36, W - 72, H - 72);
+  c.textAlign = 'center'; c.fillStyle = '#d9572b'; c.font = '700 16px ' + F; c.fillText('PRACTICE CERTIFICATE', W / 2, 88);
+  c.fillStyle = '#1e2a3a'; c.font = '900 40px ' + SF; c.fillText('練習證明', W / 2, 138);
+  c.fillStyle = '#5b6575'; c.font = '500 17px ' + F; c.fillText('新品開發系統化工作坊' + (settings.org ? '｜' + settings.org : ''), W / 2, 172);
+  var rows = idRows().concat([['原產品', P() + '（' + cat().label + '）'], ['新品概念', d.pr.name || '—'], ['創新類型', d.it ? d.it.n : '尚未判定']]);
+  var y = 222;
+  rows.forEach(function(r){
+    c.textAlign = 'right'; c.fillStyle = '#13777a'; c.font = '700 20px ' + F; c.fillText(r[0] + '：', 380, y);
+    c.textAlign = 'left'; c.fillStyle = '#1e2a3a'; c.font = '700 21px ' + F;
+    var v = String(r[1]); while(c.measureText(v).width > 520 && v.length > 2) v = v.slice(0, -2) + '…'; c.fillText(v, 390, y); y += 38;
+  });
+  c.textAlign = 'center'; c.fillStyle = '#1e2a3a'; c.font = '500 17px ' + F;
+  var done = d.ck.filter(function(x){ return x.done; }).length;
+  var sum = '已完成評論優缺點、客戶痛點、產品五層次、七種創新方法、3C、曼陀羅與五星檢核表（' + done + '／' + d.ck.length + ' 項已檢核），並產出新產品概念提案報告。';
+  wrapCanvasText(c, sum, 820).forEach(function(l){ c.fillText(l, W / 2, y + 14); y += 28; });
+  c.fillStyle = '#5b6575'; c.font = '500 15px ' + F; c.fillText('產出日期：' + new Date().toLocaleDateString('zh-TW'), W / 2, H - 92);
+  c.fillStyle = '#8a8f99'; c.font = '400 13px ' + F; c.fillText('本證明由使用者自行填寫身分資料產生，僅作課堂練習紀錄；By Mark Tsai', W / 2, H - 64);
+  var dt = new Date(), ymd = dt.getFullYear() + String(dt.getMonth() + 1).padStart(2, '0') + String(dt.getDate()).padStart(2, '0');
+  cv.toBlob(function(b){ var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = '練習證明_' + fileSafe(settings.stuName || settings.stuId || '學員') + '_' + ymd + '.png'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000); toast('已下載練習證明圖檔'); }, 'image/png');
+}
 function reportData(){
   var r = eff('reviews'), pn = eff('pains'), lv = eff('levels'), m = eff('methods'), c3 = eff('c3'), md = mandalaEff(), ck = checkItems(), it = itypeResult(), pr = proposalEff();
   return {r:r, pn:pn, lv:lv, m:m, c3:c3, md:md, ck:ck, it:it, pr:pr};
@@ -1288,7 +1327,7 @@ function reportData(){
 function buildPrint(){
   var d = reportData(), i = S.input, h = '';
   function tb(head, rows){ return '<table><tr>' + head.map(function(x){ return '<th>' + esc(x) + '</th>'; }).join('') + '</tr>' + rows.map(function(r){ return '<tr>' + r.map(function(x){ return '<td>' + esc(x).replace(/\n/g, '<br>') + '</td>'; }).join('') + '</tr>'; }).join('') + '</table>'; }
-  h += '<h1>新產品概念提案：' + esc(d.pr.name) + '</h1><div class="meta">原產品：' + esc(P()) + '（' + esc(cat().label) + '）｜' + (settings.author ? '提案人：' + esc(settings.author) + '｜' : '') + (settings.org ? esc(settings.org) + '｜' : '') + '產出日期：' + new Date().toLocaleDateString('zh-TW') + '｜新品開發系統化工作坊</div>';
+  h += '<h1>新產品概念提案：' + esc(d.pr.name) + '</h1><div class="meta">原產品：' + esc(P()) + '（' + esc(cat().label) + '）｜' + (settings.org ? esc(settings.org) + '｜' : '') + '產出日期：' + new Date().toLocaleDateString('zh-TW') + '｜新品開發系統化工作坊</div>' + (idRows().length ? tb(idRows().map(function(x){ return x[0]; }), [idRows().map(function(x){ return x[1]; })]) : '');
   h += '<h2>一、新產品概念提案</h2>' + tb(['項目','內容'], PROP_FIELDS.map(function(f){ return [f[1], d.pr[f[0]] || '']; }));
   h += '<h2>二、評論優缺點（A02）</h2>' + tb(['類型','面向','次數','代表評論'], (d.r.pros || []).map(function(x){ return ['優點', x.n, x.count, (x.ex || []).join('／')]; }).concat((d.r.cons || []).map(function(x){ return ['缺點', x.n, x.count, (x.ex || []).join('／')]; }))) + '<p>' + esc(d.r.summary) + '</p>';
   h += '<h2>三、客戶痛點（C04）</h2>' + tb(['目標客群','使用情境','沒有被滿足的需求','嚴重度','改良方向'], (d.pn.rows || []).map(function(x){ return [x.seg, x.scene, x.unmet, stars(x.stars), x.fix]; }));
@@ -1303,7 +1342,8 @@ function buildPrint(){
 function buildMd(){
   var d = reportData(), o = [];
   function t(head, rows){ o.push('| ' + head.join(' | ') + ' |'); o.push('|' + head.map(function(){ return ' --- '; }).join('|') + '|'); rows.forEach(function(r){ o.push('| ' + r.map(function(x){ return String(x == null ? '' : x).replace(/\|/g, '／').replace(/\n/g, '<br>'); }).join(' | ') + ' |'); }); o.push(''); }
-  o.push('# 新產品概念提案：' + d.pr.name, '', '> 原產品：' + P() + '（' + cat().label + '）' + (settings.author ? '｜提案人：' + settings.author : '') + '｜產出日期：' + new Date().toLocaleDateString('zh-TW'), '');
+  o.push('# 新產品概念提案：' + d.pr.name, '', '> 原產品：' + P() + '（' + cat().label + '）' + (settings.org ? '｜' + settings.org : '') + '｜產出日期：' + new Date().toLocaleDateString('zh-TW'), '');
+  if(idRows().length) t(idRows().map(function(x){ return x[0]; }), [idRows().map(function(x){ return x[1]; })]);
   o.push('## 一、新產品概念提案', ''); t(['項目','內容'], PROP_FIELDS.map(function(f){ return [f[1], d.pr[f[0]] || '']; }));
   o.push('## 二、評論優缺點', ''); t(['類型','面向','次數','代表評論'], (d.r.pros || []).map(function(x){ return ['優點', x.n, x.count, (x.ex || []).join('／')]; }).concat((d.r.cons || []).map(function(x){ return ['缺點', x.n, x.count, (x.ex || []).join('／')]; }))); o.push(d.r.summary, '');
   o.push('## 三、客戶痛點', ''); t(['目標客群','使用情境','沒有被滿足的需求','嚴重度','改良方向'], (d.pn.rows || []).map(function(x){ return [x.seg, x.scene, x.unmet, stars(x.stars), x.fix]; }));
@@ -1331,7 +1371,7 @@ function updateSetSummaries(){
   var pv = AI_PROVIDERS[settings.provider] || AI_PROVIDERS.claude;
   $('sumAi').textContent = pv.label.replace(/（.*）/, '') + '／' + curModel() + '｜' + (settings.apiKey ? '✅ 已填金鑰' : '未填金鑰（規則式＋複製提示詞）');
   $('sumDisplay').textContent = '字級 ' + ({'':'標準', l:'大', xl:'特大'}[settings.fs || ''] || '標準') + '｜自動保存 ' + (settings.autoSave ? '開' : '關');
-  $('sumReport').textContent = (settings.author ? '署名：' + settings.author : '未署名') + (settings.org ? '｜' + settings.org : '');
+  $('sumReport').textContent = (idRows().length ? idRows().map(function(x){ return x[1]; }).join('・') : '未填身分資料') + (settings.org ? '｜' + settings.org : '');
   $('sumData').textContent = '已存專案 ' + projects().length + ' 個';
 }
 function applySettings(){
@@ -1343,7 +1383,8 @@ function fillSettingsUI(){
   renderModelOptions($('aiProvider').value, settings.model);
   $('aiKey').value = settings.apiKey || '';
   $('setAutoSave').checked = !!settings.autoSave;
-  $('setAuthor').value = settings.author || ''; $('setOrg').value = settings.org || '';
+  if(settings.author && !settings.stuName){ settings.stuName = settings.author; settings.author = ''; saveSettings(); }
+  $('setName').value = settings.stuName || ''; $('setStuId').value = settings.stuId || ''; $('setDept').value = settings.dept || ''; $('setGroup').value = settings.group || ''; $('setOrg').value = settings.org || '';
   applySettings(); updateSetSummaries();
 }
 function openAbout(which){ $('about').classList.add('show'); if(which === 'creator') setTimeout(function(){ $('creatorBox').scrollIntoView({block:'center'}); }, 30); }
@@ -1415,6 +1456,7 @@ function bind(){
     if(act === 'reseed'){ S.seeds[k] = (S.seeds[k] || 0) + 1; if(k === 'methods') S.picks = null; if(k === 'mandala') S.mandEdit = {}; rebuildFrom(k); save(); render(); toast('🔀 已換一批'); return; }
     if(act === 'addCheck'){ var v = $('newCheck').value.trim(); if(!v){ toast('請輸入檢核項目'); return; } S.extraChecks.push({id:'x' + Date.now().toString(36), t:v, stars:4, src:'自訂', extra:true}); save(); render(); return; }
     if(act === 'print'){ if(!S.analyzed){ toast('請先完成分析'); return; } S.rule.proposal = buildProposal(); buildPrint(); setTimeout(function(){ window.print(); }, 50); return; }
+    if(act === 'cert'){ downloadCert(); return; }
     if(act === 'md'){ S.rule.proposal = buildProposal(); downloadFile('新品概念提案_' + fileSafe(P()) + '.md', buildMd(), 'text/markdown;charset=utf-8'); return; }
   });
   document.addEventListener('input', function(e){
@@ -1462,7 +1504,7 @@ function bind(){
     catch(e){ $('testAiMsg').textContent = '❌ ' + e.message; }
   });
   $('setAutoSave').addEventListener('change', function(){ settings.autoSave = this.checked; saveSettings(); if(!settings.autoSave) lsDel(DRAFT_KEY); else save(); });
-  $('setAuthor').addEventListener('input', function(){ settings.author = this.value; saveSettings(); });
+  [['setName','stuName'],['setStuId','stuId'],['setDept','dept'],['setGroup','group']].forEach(function(p){ $(p[0]).addEventListener('input', function(){ settings[p[1]] = this.value; saveSettings(); }); });
   $('setOrg').addEventListener('input', function(){ settings.org = this.value; saveSettings(); });
   $('exportAll').addEventListener('click', function(){ downloadFile('新品開發專案備份_' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify({app:'new-product-dev-system', v:1, current:S, projects:projects()}, null, 1), 'application/json'); });
   $('importFile').addEventListener('change', function(){
@@ -1501,7 +1543,7 @@ function init(){
   initMarquee(); initPwa();
   if(!lsGet(WARN_KEY)) setTimeout(function(){ openAbout(); }, 400);
 }
-window._npd = {get S(){ return S; }, parseProductUrl:parseProductUrl, applyUrlData:applyUrlData, urlFill:urlFill, aiFillBlank:aiFillBlank, buildBlankPrompt:buildBlankPrompt, catFromText:catFromText, analyze:analyze, go:go, render:render, promptFor:promptFor, aiPromptFor:aiPromptFor, conform:conform, buildMd:buildMd, buildPrint:buildPrint, checkItems:checkItems, picks:picks, itypeResult:itypeResult};
+window._npd = {get S(){ return S; }, parseProductUrl:parseProductUrl, applyUrlData:applyUrlData, urlFill:urlFill, aiFillBlank:aiFillBlank, buildBlankPrompt:buildBlankPrompt, catFromText:catFromText, analyze:analyze, go:go, render:render, promptFor:promptFor, aiPromptFor:aiPromptFor, conform:conform, buildMd:buildMd, buildPrint:buildPrint, downloadCert:downloadCert, idRows:idRows, checkItems:checkItems, picks:picks, itypeResult:itypeResult};
 init();
 })();
 </script>

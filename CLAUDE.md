@@ -12,7 +12,7 @@
 - 引擎：`analyzeReviews`（五星評論按逗號拆子句、回饋整行判斷）→ `buildPains` → `buildLevels` → `buildMethods` → `buildC3` → `buildMandala` → `buildChecklist` → `buildProposal`，`ORDER`＋`rebuildFrom(k)` 依序重建；下游一律讀 `eff(k)`（AI 結果優先、否則規則式）。
 - **AI（BYOK）**：`aiPromptFor(k)`＝課程提示詞＋「只輸出 JSON，結構同此範例」＋規則式結果當 schema；回傳用 `conform(rule, got)` 逐鍵型別對齊，缺鍵退回規則式。檢核表另外處理（重算 id）。重新按「開始分析」會清掉 AI、勾選與手動修改。
 - 使用者手動狀態：`picks`（勾選構想，null＝預設前 3 個）、`mandEdit`（格子 key `面向_序號`）、`checks`（星數／完成／備註，key＝項目文字 hash）、`extraChecks`、`itype`、`road`、`propEdit`。
-- 報告：`buildPrint()` 填 `#printReport`＋`@media print` 只印報告；`buildMd()` 下載 Markdown。
+- 報告：`buildPrint()` 填 `#printReport`＋`@media print` 只印報告；`buildMd()` 下載 Markdown。⚙ 報告設定有姓名／學號／系所／組別（`settings.stuName/stuId/dept/group`，`idRows()` 只取有填的；舊 `author` 載入時自動搬到姓名），印在 PDF／Markdown 開頭表格；`downloadCert()` 用 Canvas 畫 1000×700 練習證明 PNG（`data-act="cert"`，報告設定與步驟 9 工具列都有；比照跨境電商工具練習證明做法，**刻意用圖檔不用 PDF**）。
 - 儲存鍵前綴 `npdSys.`：settings／draft（自動保存）／projects（最多 40）／warned／setOpen／marquee。
 - **貼網址自動填入**（2026-11-01 使用者要求）：步驟 0 `.urlcard`，`S.input.urlMe／urlComp` 各一個「🔗 自動填入」（`data-act="urlfill" data-k="me|comp|all"`）。`parseProductUrl()` 免金鑰辨識平台／幣別／網址裡的商品名；**momo** 打 ecommerce-competitor-analyzer 的 Cloudflare Worker `ecommerce-product-reader`（只允許 Origin m255525.github.io 與 localhost:8843，**本機 8846 預覽會被擋，測試要 mock fetch**）；其他平台有金鑰才用 `callLLMWeb()`（Claude web_fetch／Gemini url_context／OpenAI Responses web_search／OpenRouter web plugin）讀頁，prompt 規定讀不到填 null、評論只能抄頁面原句。`applyUrlData()` **只填空白欄位**、讀不到維持空白；幣別不同時售價留空、不換匯（`S.input.cur`，`curUnit()` 取代原本寫死的「元」）。類別用 `catFromText()` 對應 8 類，`S.catSet` 記錄類別是否已被使用者／範例／網址設定過（select 永遠有值，不能用空白判斷）。
 - 網址區是 `<details id="urlCard">`（使用者要求收合讓版面精簡）：預設收合，展開狀態存 `npdSys.urlOpen`；summary 右側 `urlSummary()` 顯示已貼幾個網址／幾個欄位自動填入。
