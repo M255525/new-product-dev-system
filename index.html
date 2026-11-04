@@ -1297,6 +1297,9 @@ function downloadCert(){
   if(!idRows().length){ toast('請先在「🖨 報告設定」填寫姓名／學號等資料'); openSettings(true, 'report'); return; }
   S.rule.proposal = buildProposal();
   var d = reportData(), W = 1000, H = 700, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  var dt = new Date(), p2 = function(n){ return String(n).padStart(2, '0'); };
+  var ymd = dt.getFullYear() + p2(dt.getMonth() + 1) + p2(dt.getDate()), hms = p2(dt.getHours()) + p2(dt.getMinutes()) + p2(dt.getSeconds());
+  var stamp = dt.getFullYear() + '/' + p2(dt.getMonth() + 1) + '/' + p2(dt.getDate()) + ' ' + p2(dt.getHours()) + ':' + p2(dt.getMinutes()) + ':' + p2(dt.getSeconds());
   var c = cv.getContext('2d'), F = "'Noto Sans TC','Microsoft JhengHei',sans-serif", SF = "'Noto Serif TC','Noto Sans TC','Microsoft JhengHei',serif";
   c.fillStyle = '#fffdf8'; c.fillRect(0, 0, W, H);
   c.strokeStyle = '#d9572b'; c.lineWidth = 6; c.strokeRect(22, 22, W - 44, H - 44);
@@ -1315,10 +1318,9 @@ function downloadCert(){
   var done = d.ck.filter(function(x){ return x.done; }).length;
   var sum = '已完成評論優缺點、客戶痛點、產品五層次、七種創新方法、3C、曼陀羅與五星檢核表（' + done + '／' + d.ck.length + ' 項已檢核），並產出新產品概念提案報告。';
   wrapCanvasText(c, sum, 820).forEach(function(l){ c.fillText(l, W / 2, y + 14); y += 28; });
-  c.fillStyle = '#5b6575'; c.font = '500 15px ' + F; c.fillText('產出日期：' + new Date().toLocaleDateString('zh-TW'), W / 2, H - 92);
+  c.fillStyle = '#5b6575'; c.font = '500 15px ' + F; c.fillText('產出時間：' + stamp, W / 2, H - 92);
   c.fillStyle = '#8a8f99'; c.font = '400 13px ' + F; c.fillText('本證明由使用者自行填寫身分資料產生，僅作課堂練習紀錄；By Mark Tsai', W / 2, H - 64);
-  var dt = new Date(), ymd = dt.getFullYear() + String(dt.getMonth() + 1).padStart(2, '0') + String(dt.getDate()).padStart(2, '0');
-  cv.toBlob(function(b){ var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = '練習證明_' + fileSafe(settings.stuName || settings.stuId || '學員') + '_' + ymd + '.png'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000); toast('已下載練習證明圖檔'); }, 'image/png');
+  cv.toBlob(function(b){ var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = '練習證明_' + fileSafe(settings.stuName || settings.stuId || '學員') + '_' + ymd + '_' + hms + '.png'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000); toast('已下載練習證明圖檔'); }, 'image/png');
 }
 function reportData(){
   var r = eff('reviews'), pn = eff('pains'), lv = eff('levels'), m = eff('methods'), c3 = eff('c3'), md = mandalaEff(), ck = checkItems(), it = itypeResult(), pr = proposalEff();
