@@ -427,7 +427,7 @@ body:has(#entryGate:not(.hidden)){overflow:hidden}
     <h3 style="margin:4px 0">⚠ 使用警語</h3>
     <ul class="clean" id="warnList">
       <li>本工具是<b>教學用</b>的新品開發思考框架。規則式分析以關鍵字比對與內建模板為主，AI 產出也可能有誤或過度推論，結果<b>僅供發想參考，不構成商業、投資或法律建議</b>。</li>
-      <li>評論分析只依你貼上的文字判斷。<b>請勿貼上含他人姓名、電話、地址等個資的內容</b>；若引用電商平台評論，請自行確認平台使用條款。「貼網址自動填入」只在你按下按鈕時讀取那一個商品頁（momo 由本工具讀取服務、其他網站由你設定的 AI 服務），不會批次爬取；讀不到的欄位維持空白，「AI 補齊」的內容是推測，評論為模擬資料。</li>
+      <li>評論分析只依你貼上的文字判斷。<b>請勿貼上含他人姓名、電話、地址等個資的內容</b>；若引用電商平台評論，請自行確認平台使用條款。「貼網址自動填入」只在你按下按鈕時由你設定的 AI 服務讀取那一個商品頁，不會批次爬取；讀不到的欄位維持空白，「AI 補齊」的內容是推測，評論為模擬資料。</li>
       <li>AI 功能需自備 API 金鑰（BYOK）。金鑰只存在你的瀏覽器，按下「用 AI 產生」時，產品資料會直接送往你選擇的 AI 服務商，可能產生費用，請自行留意用量。</li>
       <li>內建範例的品牌、評論、競品與價格皆為<b>虛構</b>，與任何真實商品無關。</li>
       <li>所有資料只存在本機瀏覽器（localStorage），清除瀏覽器資料就會消失；重要專案請到「⚙ 常用設定 → 資料管理」匯出 JSON 備份。</li>
@@ -890,7 +890,7 @@ function copyText(t){
 
 /* ================= 商品網址自動填入 =================
    只填空白欄位；讀不到的欄位維持空白（不推測）。來源標記 S.src[欄位]＝'url'（網址讀到）／'ai'（AI 推測）。
-   momo 走自有 Cloudflare Worker（與 ecommerce-competitor-analyzer 共用，只允許 m255525.github.io 來源）；其他平台需 BYOK 由使用者的 AI 讀頁。 */
+   有 BYOK 金鑰才由使用者的 AI 讀頁；2026-11-25 移除 momo 內建讀取（本工具不自己連線電商網站，不可恢復）。 */
 var URL_CUR = [[/amazon\.co\.jp$/, 'JPY'], [/amazon\.co\.uk$/, 'GBP'], [/amazon\.(de|fr|it|es|nl)$/, 'EUR'], [/amazon\.ca$/, 'CAD'],
   [/amazon\.com\.au$/, 'AUD'], [/amazon\.sg$/, 'SGD'], [/amazon\.com$/, 'USD'], [/shopee\.tw$|momoshop\.com\.tw$|pchome\.com\.tw$|books\.com\.tw$/, 'TWD'],
   [/shopee\.sg$/, 'SGD'], [/shopee\.com\.my$/, 'MYR'], [/shopee\.co\.th$/, 'THB']];
@@ -921,15 +921,6 @@ function catFromText(t){
   var hit = null; D.CAT_ORDER.some(function(k){ if(D.CATEGORIES[k].label === t){ hit = k; return true; } return false; }); if(hit) return hit;
   D.CAT_ORDER.some(function(k){ if(CAT_KW[k].some(function(w){ return t.toLowerCase().indexOf(w.toLowerCase()) >= 0; })){ hit = k; return true; } return false; });
   return hit;
-}
-var PRODUCT_READER_URL = 'https://ecommerce-product-reader.content-workflow.workers.dev/';
-async function readMomo(url){
-  var resp;
-  try{ resp = await fetch(PRODUCT_READER_URL + '?url=' + encodeURIComponent(url), {signal:AbortSignal.timeout(25000)}); }
-  catch(e){ throw new Error(e.name === 'TimeoutError' ? 'momo 讀取逾時，請稍後再試' : '連不上商品頁讀取服務（本機預覽不在允許來源內，請用線上版）'); }
-  var d = {}; try{ d = await resp.json(); }catch(e){}
-  if(!resp.ok || !d.ok) throw new Error(d.message || ('讀取服務回應 ' + resp.status));
-  return d;
 }
 async function postJsonWithRetry(url, headers, body, onRetry){
   var RETRY = {429:1,500:1,503:1,529:1}, MAX = 3;
@@ -1035,7 +1026,7 @@ function urlCardOpen(){ return lsGet(URL_OPEN_KEY) === '1'; }
 function urlSummary(){
   var n = [S.input.urlMe, S.input.urlComp].filter(function(x){ return String(x || '').trim(); }).length;
   var filled = Object.keys(S.src || {}).length;
-  return n ? '已貼 ' + n + ' 個網址' + (filled ? '・' + filled + ' 個欄位自動填入' : '') : 'momo 免金鑰・其他網站用 AI 讀取・只填空白欄位';
+  return n ? '已貼 ' + n + ' 個網址' + (filled ? '・' + filled + ' 個欄位自動填入' : '') : '用你的 AI 讀取・只填空白欄位';
 }
 var urlBusy = false;
 function setUrlStatus(h){ var el = $('urlStatus'); if(el) el.innerHTML = h; S._urlStatus = h; }
@@ -1051,13 +1042,9 @@ async function urlFill(which){
   urlBusy = true; document.querySelectorAll('[data-act="urlfill"],[data-act="aiBlank"]').forEach(function(b){ b.disabled = true; });
   try{
     for(var n = 0; n < jobs.length; n++){
-      var j = jobs[n], info = parseProductUrl(j.raw), err = '', via = false, r = {filled:[], notes:[], pageOk:false};
+      var j = jobs[n], info = parseProductUrl(j.raw), err = '', r = {filled:[], notes:[], pageOk:false};
       function merge(x){ x.filled.forEach(function(f){ if(r.filled.indexOf(f) < 0) r.filled.push(f); }); r.notes = r.notes.concat(x.notes); r.pageOk = r.pageOk || x.pageOk; }
-      if(info.platform === 'momo'){
-        setUrlStatus('⏳ 讀取 momo 商品頁中（' + esc(j.label) + '）…');
-        try{ var md = await readMomo(info.url); merge(applyUrlData(j.isMe, info, md)); via = true; }catch(e){ err = 'momo：' + e.message; }
-      }
-      if(!via && hasKey){
+      if(hasKey){
         setUrlStatus('⏳ AI 讀取商品頁中（' + esc(j.label) + '，約 10–60 秒）…');
         try{
           var res = await callLLMWeb(settings.provider, curModel(), settings.apiKey, buildUrlPrompt(info, j.isMe), function(a, st, w){ setUrlStatus('⏳ 服務商忙碌（' + st + '），' + w + ' 秒後重試…'); });
@@ -1065,15 +1052,15 @@ async function urlFill(which){
           if(res.fetchError && data.readable !== true) data.readable = false;
           merge(applyUrlData(j.isMe, info, data)); err = '';
         }catch(e){ err = (err ? err + '；' : '') + e.message; merge(applyUrlData(j.isMe, info, {readable:false})); }
-      } else if(!via){ merge(applyUrlData(j.isMe, info, {readable:false})); }
+      } else { merge(applyUrlData(j.isMe, info, {readable:false})); }
       var msg = '<b>' + esc(j.label) + '</b>' + (info.platform ? '（' + PLATFORM_LABEL[info.platform] + '）' : '') + '：';
       if(err) msg += '<span style="color:var(--bad)">讀取失敗（' + esc(err) + '）</span>，';
-      else if((hasKey || via) && !r.pageOk) msg += '網站擋下或頁面讀不到，';
+      else if(hasKey && !r.pageOk) msg += '網站擋下或頁面讀不到，';
       msg += r.filled.length ? '已填入 ' + esc(r.filled.join('、')) : '沒有可填入的新資料（已有內容的欄位不會被覆蓋）';
       if(r.notes.length) msg += '；' + esc(r.notes.join('；'));
       out.push(msg);
     }
-    var tail = hasKey ? '讀不到的欄位維持空白；可以按「✨ 請 AI 補齊空白欄位」。' : 'momo 由內建讀取服務直接填入；其他平台沒有 API 金鑰時只能從網址辨識商品名稱，其他欄位維持空白（到 ⚙ 常用設定填金鑰後可讓 AI 讀頁）。';
+    var tail = hasKey ? '讀不到的欄位維持空白；可以按「✨ 請 AI 補齊空白欄位」。' : '沒有 API 金鑰時只能從網址辨識商品名稱，其他欄位維持空白（到 ⚙ 常用設定填金鑰後可讓 AI 讀頁）。';
     save(); render(); setUrlStatus('🔗 ' + out.join('<br>') + '<br><span class="muted">' + tail + '</span>');
   }finally{
     urlBusy = false; document.querySelectorAll('[data-act="urlfill"],[data-act="aiBlank"]').forEach(function(b){ b.disabled = false; });
@@ -1164,8 +1151,8 @@ function vInput(){
     '<div class="card" style="margin-bottom:12px"><b>📐 系統化流程</b><div class="flow"><span class="k">產品名稱・類別・客群</span><em>→</em><span>五星評論內容</span><em>＋</em><span>客戶回饋意見</span><em>→</em><span>產品痛點</span><em>→</em><span>產品的五個層次</span><em>→</em><span>七種創新方法</span><em>→</em><span>3C・曼陀羅・檢核表</span><em>→</em><span class="k">新產品概念提案報告</span></div>' +
     '<div class="legend"><span><b style="background:var(--mustard)">A</b>提示詞模板</span><span><b style="background:var(--teal)">A</b>輸入資料</span><span><b style="background:var(--accent)">A</b>提示詞產出內容</span><span>——每一步的產出，會自動成為下一步的輸入資料</span></div></div>' +
     '<div class="fld"><label>載入範例（全部虛構）</label><div style="display:flex;flex-wrap:wrap;gap:6px">' + D.SAMPLES.map(function(s){ return '<button class="chip" type="button" data-sample="' + s.key + '">' + esc(s.label) + '</button>'; }).join('') + '<button class="chip" type="button" data-act="clearInput">🧹 清空</button></div></div>' +
-    '<details class="card urlcard" id="urlCard"' + (urlCardOpen() ? ' open' : '') + '><summary><span class="ut">🔗 貼上商品網址，自動填入欄位</span><span class="us">' + esc(urlSummary()) + '</span></summary><div class="urlbody"><div class="hint" style="margin:2px 0 8px">支援 momo（免金鑰）；蝦皮、PChome、Amazon 等其他網站需在 ⚙ 常用設定填入 AI 金鑰，由你的 AI 讀取頁面。只會填入<b>空白</b>的欄位，讀不到的欄位維持空白。</div>' +
-    '<div class="urlrow"><label for="f_urlMe">我方／參考商品網址</label><input type="url" id="f_urlMe" data-in="urlMe" inputmode="url" value="' + esc(i.urlMe) + '" placeholder="https://www.momoshop.com.tw/goods/GoodsDetail.jsp?i_code=…"><button class="btn small teal" type="button" data-act="urlfill" data-k="me">🔗 自動填入</button></div>' +
+    '<details class="card urlcard" id="urlCard"' + (urlCardOpen() ? ' open' : '') + '><summary><span class="ut">🔗 貼上商品網址，自動填入欄位</span><span class="us">' + esc(urlSummary()) + '</span></summary><div class="urlbody"><div class="hint" style="margin:2px 0 8px">在 ⚙ 常用設定填入 AI 金鑰後，由你的 AI 讀取頁面；沒有金鑰時只從網址辨識商品名稱。只會填入<b>空白</b>的欄位，讀不到的欄位維持空白。</div>' +
+    '<div class="urlrow"><label for="f_urlMe">我方／參考商品網址</label><input type="url" id="f_urlMe" data-in="urlMe" inputmode="url" value="' + esc(i.urlMe) + '" placeholder="https://…（商品頁網址）"><button class="btn small teal" type="button" data-act="urlfill" data-k="me">🔗 自動填入</button></div>' +
     '<div class="urlrow"><label for="f_urlComp">競品網址</label><input type="url" id="f_urlComp" data-in="urlComp" inputmode="url" value="' + esc(i.urlComp) + '" placeholder="https://…"><button class="btn small teal" type="button" data-act="urlfill" data-k="comp">🔗 自動填入</button></div>' +
     '<div class="tools" style="margin:8px 0 0"><button class="btn small" type="button" data-act="urlfill" data-k="all">🔗 兩個都填入</button><button class="btn small" type="button" data-act="aiBlank" style="border-color:var(--plum);color:var(--plum)">✨ 請 AI 補齊空白欄位</button></div>' +
     '<div class="urlst" id="urlStatus">' + (S._urlStatus || '') + '</div></div></details>' +
